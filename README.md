@@ -39,6 +39,36 @@ By bringing these three groups together, the system aims to provide an integrate
 | **Academic Staff** | Faculty and advisors | Department, title/position, courses or students supervised |
 
 ---
+🌟 Key Features
+
+The platform is designed to go beyond simple record-keeping and act as a communication bridge between alumni, current students, and academic staff.
+
+👤 Profile & Records
+User registration and login for alumni, students, and academic staff (with role-based access)
+Editable personal profiles (contact info, department, graduation year/expected graduation year, job/position)
+Search and filter users by department, graduation year, role, or job title
+
+💬 Communication & Networking
+Direct messaging between alumni and current students (e.g. for mentorship or advice)
+Ability for students to reach out to alumni working in a specific company or field
+Discussion boards / comment sections for department- or topic-based conversations
+Notification system for new messages or connection requests
+
+🤝 Mentorship & Career Support
+Alumni can offer mentorship to current students
+Alumni can share job openings, internships, or career opportunities
+Students can browse alumni by industry/company for networking purposes
+
+📅 Events & Announcements
+Academic staff or admins can post events (career days, alumni meetups, seminars)
+Alumni and students can view and RSVP to upcoming events
+
+📊 Admin / Academic Staff Panel
+Academic staff can view statistics about alumni (e.g. employment rate, popular industries)
+Manage/approve new user registrations
+Manage department and event data
+
+The exact scope of these features can be adjusted based on the instructor's core requirements and available development time — the list above represents the intended full feature set of the platform.
 
 ## ⚙️ The One-Command Rule
 
