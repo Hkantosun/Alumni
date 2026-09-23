@@ -29,11 +29,11 @@ app.get('/Hello/:name', (req, res) => {
 app.get('/sum/:number1/:number2', (req, res) => {
   const num1 = parseFloat(req.params.number1);
   const num2 = parseFloat(req.params.number2);
-  
+
   if (isNaN(num1) || isNaN(num2)) {
     return res.status(400).send('Lütfen geçerli sayılar girin.');
   }
-  
+
   res.send(`${num1 + num2}`);
 });
 
@@ -82,7 +82,7 @@ app.get('/about', (req, res) => {
     <body>
       <div class="container">
         <h1>About Alumni System</h1>
-        <p>This platform is designed to connect graduates, foster networking, and share career opportunities. Stay tuned for more features!</p>
+        <p>This platform is designed to connect graduates, faster networking, and share career opportunities. Stay tuned for more features!</p>
       </div>
     </body>
     </html>
