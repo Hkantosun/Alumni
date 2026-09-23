@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  # ── Backend ─────────────────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: alumni_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://alumni_user:alumni_pass@db:5432/alumni_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Database ─────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: alumni_db
+    restart: always
+    environment:
+      POSTGRES_USER: alumni_user
+      POSTGRES_PASSWORD: alumni_pass
+      POSTGRES_DB: alumni_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alumni_user -d alumni_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
