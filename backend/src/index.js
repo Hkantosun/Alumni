@@ -2,17 +2,358 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Swagger OpenAPI Tanımlaması
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Alumni Tracking System API',
+    version: '1.0.0',
+    description: 'Alumni Backend REST API Dokümantasyonu (Swagger UI)'
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000',
+      description: 'Yerel Geliştirme Sunucusu (Local Development Server)'
+    }
+  ],
+  paths: {
+    '/': {
+      get: {
+        summary: 'Ana Sayfa - Root Status Check',
+        responses: { 200: { description: 'OK' } }
+      }
+    },
+    '/api/health': {
+      get: {
+        summary: 'Sağlık Kontrolü (Health Check)',
+        responses: { 200: { description: 'Sistem durumu ve zaman damgası JSON yanıtı' } }
+      }
+    },
+    '/api/users': {
+      get: {
+        summary: 'Tüm Kullanıcıları Sıralanmış Olarak Listele',
+        parameters: [
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string', default: 'id' },
+            description: 'Sıralanacak alan (ör. id, name, createdAt)'
+          },
+          {
+            name: 'order',
+            in: 'query',
+            schema: { type: 'string', enum: ['asc', 'desc'], default: 'asc' },
+            description: 'Sıralama yönü (asc: artan, desc: azalan)'
+          }
+        ],
+        responses: { 200: { description: 'Sıralı kullanıcı listesi' } }
+      },
+      post: {
+        summary: 'Yeni Kullanıcı Verisi Gönder / Kaydet',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { name: 'Ahmet Yılmaz', email: 'ahmet@example.com' }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Kullanıcı oluşturuldu' },
+          400: { description: 'Boş veya geçersiz veri' }
+        }
+      }
+    },
+    '/api/users/{id}': {
+      get: {
+        summary: 'ID ile Tek Kullanıcı Detayı Getir',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          200: { description: 'Kullanıcı bilgisi' },
+          404: { description: 'Kullanıcı bulunamadı' }
+        }
+      },
+      put: {
+        summary: 'Kullanıcı Verisini Tamamen Güncelle (PUT)',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { name: 'Ahmet Güncel', email: 'ahmet.yeni@example.com' }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Kullanıcı tamamen güncellendi' },
+          404: { description: 'Kullanıcı bulunamadı' }
+        }
+      },
+      patch: {
+        summary: 'Kullanıcı Verisini Kısmen Güncelle (PATCH)',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { city: 'İstanbul' }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Kullanıcı kısmen güncellendi' },
+          404: { description: 'Kullanıcı bulunamadı' }
+        }
+      },
+      delete: {
+        summary: 'Belirli Kullanıcıyı Sil (Diğer Kayıtları Koru)',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          200: { description: 'Kullanıcı silindi' },
+          404: { description: 'Kullanıcı bulunamadı' }
+        }
+      }
+    },
+    '/Hello': {
+      get: {
+        summary: 'Hello World Yanıtı',
+        responses: { 200: { description: 'OK' } }
+      }
+    },
+    '/Hello/{name}': {
+      get: {
+        summary: 'Isme Özel Karşılama',
+        parameters: [
+          { name: 'name', in: 'path', required: true, schema: { type: 'string' } }
+        ],
+        responses: { 200: { description: 'OK' } }
+      }
+    },
+    '/sum/{number1}/{number2}': {
+      get: {
+        summary: 'İki Sayının Toplamı',
+        parameters: [
+          { name: 'number1', in: 'path', required: true, schema: { type: 'number' } },
+          { name: 'number2', in: 'path', required: true, schema: { type: 'number' } }
+        ],
+        responses: { 200: { description: 'Toplama sonucu' } }
+      }
+    }
+  }
+};
+
+const swaggerSpec = swaggerJsdoc({ swaggerDefinition, apis: [] });
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
+// Swagger UI rotası (/api/swagger)
+app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
 // GET / — Ana sayfa, sistem durumu
 app.get('/', (req, res) => {
   res.send('ok');
 });
+
+// GET /api/health - Health check JSON response
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Backend is healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Database olmadan bellek içi (in-memory) veri deposu (Başlangıçta tamamen boş)
+const users = [];
+
+// POST /api/users - POST ile gönderilen veriyi bellek içine kaydet
+app.post('/api/users', (req, res) => {
+  const payload = req.body;
+
+  if (!payload || Object.keys(payload).length === 0) {
+    return res.status(400).json({
+      error: 'Gönderilen veri boş olamaz.'
+    });
+  }
+
+  const newUser = {
+    id: users.length + 1,
+    ...payload,
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(newUser);
+
+  res.status(201).json({
+    message: 'Veri başarıyla alındı ve kaydedildi',
+    user: newUser
+  });
+});
+
+// GET /api/users - tüm kullanıcıları sıralanmış şekilde listele
+app.get('/api/users', (req, res) => {
+  const { sortBy = 'id', order = 'asc' } = req.query;
+
+  // Diziyi kopyalayıp seçilen alana ve yöne göre sırala
+  const sortedUsers = [...users].sort((a, b) => {
+    let valA = a[sortBy];
+    let valB = b[sortBy];
+
+    if (valA === undefined) return 1;
+    if (valB === undefined) return -1;
+
+    if (typeof valA === 'string') {
+      return order === 'desc' 
+        ? valB.localeCompare(valA) 
+        : valA.localeCompare(valB);
+    }
+
+    return order === 'desc' ? valB - valA : valA - valB;
+  });
+
+  res.json({
+    count: sortedUsers.length,
+    sortBy,
+    order,
+    users: sortedUsers
+  });
+});
+
+// PUT /api/users/:id - Tam güncelleme (Full update)
+app.put('/api/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const userIndex = users.findIndex(u => u.id === userId);
+
+  if (userIndex === -1) {
+    return res.status(404).json({
+      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
+    });
+  }
+
+  const payload = req.body;
+  if (!payload || Object.keys(payload).length === 0) {
+    return res.status(400).json({
+      error: 'PUT isteğinde güncellenecek veri (body) boş olamaz.'
+    });
+  }
+
+  // PUT: Tüm nesneyi yenisiyle değiştir (id ve createdAt korunur)
+  const updatedUser = {
+    id: userId,
+    ...payload,
+    createdAt: users[userIndex].createdAt,
+    updatedAt: new Date().toISOString()
+  };
+
+  users[userIndex] = updatedUser;
+
+  res.json({
+    message: 'Kullanıcı verisi tamamen güncellendi (PUT)',
+    user: updatedUser
+  });
+});
+
+// PATCH /api/users/:id - Kısmi güncelleme (Partial update)
+app.patch('/api/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const userIndex = users.findIndex(u => u.id === userId);
+
+  if (userIndex === -1) {
+    return res.status(404).json({
+      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
+    });
+  }
+
+  const payload = req.body;
+  if (!payload || Object.keys(payload).length === 0) {
+    return res.status(400).json({
+      error: 'PATCH isteğinde güncellenecek veri alanı bulunamadı.'
+    });
+  }
+
+  // PATCH: Sadece gönderilen alanları mevcut veriyle birleştir
+  const updatedUser = {
+    ...users[userIndex],
+    ...payload,
+    id: userId, // ID değiştirilemez
+    updatedAt: new Date().toISOString()
+  };
+
+  users[userIndex] = updatedUser;
+
+  res.json({
+    message: 'Kullanıcı verisi kısmen güncellendi (PATCH)',
+    user: updatedUser
+  });
+});
+
+// GET /api/users/:id - Belirli bir kullanıcıyı ID'sine göre getir
+app.get('/api/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const user = users.find(u => u.id === userId);
+
+  if (!user) {
+    return res.status(404).json({
+      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
+    });
+  }
+
+  res.json({
+    user
+  });
+});
+
+// DELETE /api/users/:id - Belirli bir kullanıcıyı sil (Diğer kayıtlı kullanıcılar korunur)
+app.delete('/api/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const userIndex = users.findIndex(u => u.id === userId);
+
+  if (userIndex === -1) {
+    return res.status(404).json({
+      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
+    });
+  }
+
+  // Sadece hedeflenen kullanıcı listeden çıkarılır
+  const deletedUser = users.splice(userIndex, 1)[0];
+
+  res.json({
+    message: `ID'si ${userId} olan kullanıcı başarıyla silindi.`,
+    deletedUser,
+    remainingCount: users.length
+  });
+});
+
+
+
+
+
 
 // GET /Hello
 app.get('/Hello', (req, res) => {

@@ -88,6 +88,32 @@ Because of this rule, Docker-compatibility is considered from the very beginning
 
 ---
 
+## 📚 API Documentation & Swagger UI
+
+Interactive OpenAPI (Swagger UI) documentation is available at:
+
+👉 **`http://localhost:3000/api/swagger`**
+
+### 🚀 Available REST Endpoints:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| **GET** | `/` | System root health check |
+| **GET** | `/api/health` | Health check returning JSON status |
+| **GET** | `/api/swagger` | Interactive Swagger API Documentation |
+| **GET** | `/api/users` | List all users (supports `sortBy` and `order` query params) |
+| **POST** | `/api/users` | Create/Save new user data |
+| **GET** | `/api/users/:id` | Get specific user details by ID |
+| **PUT** | `/api/users/:id` | Full update user data by ID |
+| **PATCH** | `/api/users/:id` | Partial update user data by ID |
+| **DELETE** | `/api/users/:id` | Delete specific user by ID |
+| **GET** | `/Hello` | Hello World greeting |
+| **GET** | `/Hello/:name` | Personalized greeting |
+| **GET** | `/sum/:number1/:number2` | Sum two numbers |
+
+---
+
+
 ## 🛠 Tech Stack
 
 ### Backend
