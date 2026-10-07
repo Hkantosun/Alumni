@@ -9,6 +9,7 @@
 - [Who Uses This System](#-who-uses-this-system)
 - [The One-Command Rule](#-the-one-command-rule)
 - [Tech Stack](#-tech-stack)
+- [MVC Architecture](#-mvc-architecture)
 - [Core Requirements](#-core-requirements-defined-by-the-instructor)
 - [Additional Features](#-additional-features-developer-choice)
 - [Project Philosophy](#-project-philosophy)
@@ -134,6 +135,92 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 - **Git & GitHub** — version control and collaboration
 - **Antigravity** — development environment used to build the project
 - **.env files** — used for environment variables (e.g., database credentials), excluded from version control via `.gitignore`
+
+---
+
+## 🏛 MVC Architecture
+
+The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** architectural pattern to separate data persistence, presentation logic, and request routing/business rules.
+
+```
+       +-------------------------------------------------------+
+       |                     CLIENT / USER                     |
+       +-------------------------------------------------------+
+                                   |
+                         HTTP Requests / Responses
+                                   v
+       +-------------------------------------------------------+
+       |                   CONTROLLER LAYER                    |
+       |  Express Route Handlers (app.get, app.post, etc.)    |
+       |  Input Validation, Sorting & Query Logic              |
+       +-------------------------------------------------------+
+                      /                         \
+        Reads & Updates                          Renders & Formats
+                     v                             v
++--------------------------+             +--------------------------+
+|       MODEL LAYER        |             |        VIEW LAYER        |
+|  In-Memory / PostgreSQL  |             |  JSON API Responses      |
+|  User & Alumni Schema    |             |  Swagger UI & Web Views  |
++--------------------------+             +--------------------------+
+```
+
+### 1. 🗄️ Model Layer
+- **Responsibility:** Represents data models, database state, entity rules, and persistence operations.
+- **Implementation in Project:**
+  - **Database Persistence:** Managed via **PostgreSQL** (`alumni_db` running on port `5433:5432` in Docker Compose) using the `pg` database driver.
+  - **In-Memory Store:** Prototyped data structures (`users` array in `backend/src/index.js`) representing User entities with fields such as `id`, `name`, `email`, `createdAt`, and `updatedAt`.
+  - **Domain Entities:** User data models covering **Alumni**, **Students**, and **Academic Staff**.
+
+### 2. 👁️ View Layer
+- **Responsibility:** Formats and presents information back to the client or user interface.
+- **Implementation in Project:**
+  - **JSON REST API View:** Formats output data structures as JSON responses for client consumption (e.g., list of users, health status payload).
+  - **Swagger UI (`/api/swagger`):** Interactive OpenAPI documentation powered by `swagger-ui-express` for visualizing and testing endpoints visually.
+  - **HTML Views:** Server-side rendered HTML responses served for endpoints like `/home` and `/about`.
+
+### 3. 🎮 Controller Layer
+- **Responsibility:** Receives incoming client HTTP requests, validates payloads, orchestrates business logic, interacts with the Model layer, and selects the View representation to return.
+- **Implementation in Project:**
+  - **Express Route Handlers (`backend/src/index.js`):** Controller functions mapping HTTP verbs to endpoint actions:
+    - `POST /api/users`: Validates body payload and creates new user records.
+    - `GET /api/users`: Handles query parameters (`sortBy`, `order`), sorting logic, and list formatting.
+    - `GET /api/users/:id`: Fetches specific entity by ID.
+    - `PUT /api/users/:id` & `PATCH /api/users/:id`: Implements full and partial update operations.
+    - `DELETE /api/users/:id`: Performs resource removal while keeping remaining entities intact.
+    - `GET /api/health` & `GET /sum/:number1/:number2`: Serves health diagnostics and utility calculations.
+
+---
+
+### 📁 Directory, Folder & File Structure (MVC Mapping)
+
+The project tree structure and the mapping of each directory/file to its corresponding MVC layer is detailed below:
+
+```
+Alumni/
+├── docker-compose.yml           # [Model/DevOps] Container orchestration (PostgreSQL DB & Express API)
+├── .env                         # [Model/Config] Database credentials and server environment configuration
+├── README.md                    # Project documentation & MVC architecture
+├── implementation_plan.md       # Development roadmap & feature specifications
+├── LICENSE                      # Open-source license file
+└── backend/                     # Backend application directory
+    ├── Dockerfile               # [Controller/DevOps] Container build configuration for Express service
+    ├── package.json             # Node.js dependencies & scripts (express, pg, swagger-ui-express, cors)
+    └── src/                     # Application source code
+        └── index.js             # [Model + View + Controller] Application entry point:
+                                 #   ├── MODEL: In-memory store (`users`), PostgreSQL connection logic
+                                 #   ├── VIEW: JSON responses (`res.json`), Swagger UI (`/api/swagger`), HTML views (`/home`, `/about`)
+                                 #   └── CONTROLLER: Express endpoint handlers (`app.get`, `app.post`, `app.put`, `app.patch`, `app.delete`)
+```
+
+#### 📌 File-to-Layer Mapping Table:
+
+| Path / File | MVC Component | Description & Responsibilities |
+|---|---|---|
+| **`backend/src/index.js`** | **Model / View / Controller** | Main entry point containing data models (`users` array), view definitions (JSON/HTML/Swagger), and controller route handlers. |
+| **`docker-compose.yml`** | **Model & Infrastructure** | Manages persistent PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
+| **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
+| **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
+| **`.env`** | **Model & Configuration** | Stores database URLs, ports, and secret configurations for data connectivity. |
 
 ---
 
