@@ -181,13 +181,9 @@ The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** archi
 ### 3. 🎮 Controller Layer
 - **Responsibility:** Receives incoming client HTTP requests, validates payloads, orchestrates business logic, interacts with the Model layer, and selects the View representation to return.
 - **Implementation in Project:**
-  - **Express Route Handlers (`backend/src/index.js`):** Controller functions mapping HTTP verbs to endpoint actions:
-    - `POST /api/users`: Validates body payload and calls `UserModel.create()`.
-    - `GET /api/users`: Handles query parameters (`sortBy`, `order`) and calls `UserModel.getAll()`.
-    - `GET /api/users/:id`: Fetches specific entity via `UserModel.getById()`.
-    - `PUT /api/users/:id` & `PATCH /api/users/:id`: Implements full and partial update operations via `UserModel.update()` and `UserModel.patch()`.
-    - `DELETE /api/users/:id`: Performs resource removal via `UserModel.delete()`.
-    - `GET /api/health` & `GET /sum/:number1/:number2`: Serves health diagnostics and utility calculations.
+  - **`ApiUserController` (`backend/src/controllers/apiUserController.js`):** Dedicated REST API controller handling JSON requests, HTTP status codes, payload validations, and CRUD operations (`getUsers`, `getUserById`, `createUser`, `updateUser`, `patchUser`, `deleteUser`).
+  - **`UserController` (`backend/src/controllers/userController.js`):** Dedicated Web controller rendering HTML user list pages (`/users`), user detail cards (`/users/:id`), main pages (`/home`, `/about`), and web CRUD actions.
+  - **Express Route Registration (`backend/src/index.js`):** Connects incoming endpoints to the respective Controller methods.
 
 ---
 
@@ -206,17 +202,22 @@ Alumni/
     ├── Dockerfile               # [Controller/DevOps] Container build configuration for Express service
     ├── package.json             # Node.js dependencies & scripts (express, pg, swagger-ui-express, cors)
     └── src/                     # Application source code
-        ├── index.js             # [View + Controller] Express server entry point & route handlers
-        └── models/              # Data model abstractions
-            └── userModel.js     # [Model] Database-less User Model containing CRUD functions
+        ├── index.js             # [Router / Entry Point] Registers Express routes and initializes server
+        ├── models/              # Data model abstractions
+        │   └── userModel.js     # [Model] Database-less User Model containing CRUD functions
+        └── controllers/         # Request handling and controller logic
+            ├── apiUserController.js  # [Controller] REST API Controller (JSON responses & API CRUD)
+            └── userController.js     # [Controller] Web Controller (HTML page rendering & web actions)
 ```
 
 #### 📌 File-to-Layer Mapping Table:
 
 | Path / File | MVC Component | Description & Responsibilities |
 |---|---|---|
-| **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`). |
-| **`backend/src/index.js`** | **View / Controller** | Entry point managing Express route handlers (Controllers) and JSON/HTML/Swagger responses (Views). |
+| **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
+| **`backend/src/controllers/apiUserController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations. |
+| **`backend/src/controllers/userController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering (`/users`, `/users/:id`, `/home`, `/about`) and web CRUD actions. |
+| **`backend/src/index.js`** | **Router / Entry Point** | Initializes Express server, registers routes, and delegates requests to controllers. |
 | **`docker-compose.yml`** | **Model & Infrastructure** | Manages persistent PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |

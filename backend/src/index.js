@@ -5,6 +5,8 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const UserModel = require('./models/userModel');
+const UserController = require('./controllers/userController');
+const ApiUserController = require('./controllers/apiUserController');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -190,120 +192,44 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// POST /api/users - POST ile gönderilen veriyi bellek içine kaydet
-app.post('/api/users', (req, res) => {
-  const payload = req.body;
+// ── REST API User Routes (ApiUserController) ──────────────
+app.get('/api/users', ApiUserController.getUsers);
+app.post('/api/users', ApiUserController.createUser);
+app.get('/api/users/:id', ApiUserController.getUserById);
+app.put('/api/users/:id', ApiUserController.updateUser);
+app.patch('/api/users/:id', ApiUserController.patchUser);
+app.delete('/api/users/:id', ApiUserController.deleteUser);
 
-  if (!payload || Object.keys(payload).length === 0) {
-    return res.status(400).json({
-      error: 'Gönderilen veri boş olamaz.'
-    });
-  }
+// ── Web Page User Routes (UserController) ───────────────────
+app.get('/users', UserController.renderUserList);
+app.get('/users/:id', UserController.renderUserDetail);
+app.post('/users', UserController.createUser);
+app.put('/users/:id', UserController.updateUser);
+app.delete('/users/:id', UserController.deleteUser);
+app.get('/home', UserController.renderHome);
+app.get('/about', UserController.renderAbout);
 
-  const newUser = UserModel.create(payload);
-
-  res.status(201).json({
-    message: 'Veri başarıyla alındı ve kaydedildi',
-    user: newUser
-  });
+// GET /Hello
+app.get('/Hello', (req, res) => {
+  res.send('Hello , World!');
 });
 
-// GET /api/users - tüm kullanıcıları sıralanmış şekilde listele
-app.get('/api/users', (req, res) => {
-  const { sortBy = 'id', order = 'asc' } = req.query;
-
-  const sortedUsers = UserModel.getAll({ sortBy, order });
-
-  res.json({
-    count: sortedUsers.length,
-    sortBy,
-    order,
-    users: sortedUsers
-  });
+// GET /Hello/:name
+app.get('/Hello/:name', (req, res) => {
+  const name = req.params.name;
+  res.send(`Hello , ${name}`);
 });
 
-// PUT /api/users/:id - Tam güncelleme (Full update)
-app.put('/api/users/:id', (req, res) => {
-  const userId = parseInt(req.params.id, 10);
-  const payload = req.body;
+// GET /sum/:number1/:number2
+app.get('/sum/:number1/:number2', (req, res) => {
+  const num1 = parseFloat(req.params.number1);
+  const num2 = parseFloat(req.params.number2);
 
-  if (!payload || Object.keys(payload).length === 0) {
-    return res.status(400).json({
-      error: 'PUT isteğinde güncellenecek veri (body) boş olamaz.'
-    });
+  if (isNaN(num1) || isNaN(num2)) {
+    return res.status(400).send('Lütfen geçerli sayılar girin.');
   }
 
-  const updatedUser = UserModel.update(userId, payload);
-
-  if (!updatedUser) {
-    return res.status(404).json({
-      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
-    });
-  }
-
-  res.json({
-    message: 'Kullanıcı verisi tamamen güncellendi (PUT)',
-    user: updatedUser
-  });
-});
-
-// PATCH /api/users/:id - Kısmi güncelleme (Partial update)
-app.patch('/api/users/:id', (req, res) => {
-  const userId = parseInt(req.params.id, 10);
-  const payload = req.body;
-
-  if (!payload || Object.keys(payload).length === 0) {
-    return res.status(400).json({
-      error: 'PATCH isteğinde güncellenecek veri alanı bulunamadı.'
-    });
-  }
-
-  const updatedUser = UserModel.patch(userId, payload);
-
-  if (!updatedUser) {
-    return res.status(404).json({
-      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
-    });
-  }
-
-  res.json({
-    message: 'Kullanıcı verisi kısmen güncellendi (PATCH)',
-    user: updatedUser
-  });
-});
-
-// GET /api/users/:id - Belirli bir kullanıcıyı ID'sine göre getir
-app.get('/api/users/:id', (req, res) => {
-  const userId = parseInt(req.params.id, 10);
-  const user = UserModel.getById(userId);
-
-  if (!user) {
-    return res.status(404).json({
-      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
-    });
-  }
-
-  res.json({
-    user
-  });
-});
-
-// DELETE /api/users/:id - Belirli bir kullanıcıyı sil (Diğer kayıtlı kullanıcılar korunur)
-app.delete('/api/users/:id', (req, res) => {
-  const userId = parseInt(req.params.id, 10);
-  const deletedUser = UserModel.delete(userId);
-
-  if (!deletedUser) {
-    return res.status(404).json({
-      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
-    });
-  }
-
-  res.json({
-    message: `ID'si ${userId} olan kullanıcı başarıyla silindi.`,
-    deletedUser,
-    remainingCount: UserModel.count()
-  });
+  res.send(`${num1 + num2}`);
 });
 
 
