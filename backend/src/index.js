@@ -4,9 +4,9 @@ const cors = require('cors');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-const UserModel = require('./models/userModel');
-const UserController = require('./controllers/userController');
-const ApiUserController = require('./controllers/apiUserController');
+
+const apiUserRoutes = require('./routes/apiUserRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +17,7 @@ const swaggerDefinition = {
   info: {
     title: 'Alumni Tracking System API',
     version: '1.0.0',
-    description: 'Alumni Backend REST API Dokümantasyonu (Swagger UI)'
+    description: 'Alumni Backend REST API & Web Page Dokümantasyonu (Swagger UI)'
   },
   servers: [
     {
@@ -40,7 +40,8 @@ const swaggerDefinition = {
     },
     '/api/users': {
       get: {
-        summary: 'Tüm Kullanıcıları Sıralanmış Olarak Listele',
+        summary: 'Tüm Kullanıcıları Sıralanmış Olarak Listele (JSON API)',
+        tags: ['API Users'],
         parameters: [
           {
             name: 'sortBy',
@@ -58,14 +59,15 @@ const swaggerDefinition = {
         responses: { 200: { description: 'Sıralı kullanıcı listesi' } }
       },
       post: {
-        summary: 'Yeni Kullanıcı Verisi Gönder / Kaydet',
+        summary: 'Yeni Kullanıcı Verisi Gönder / Kaydet (JSON API)',
+        tags: ['API Users'],
         requestBody: {
           required: true,
           content: {
             'application/json': {
               schema: {
                 type: 'object',
-                example: { name: 'Ahmet Yılmaz', email: 'ahmet@example.com' }
+                example: { name: 'Ahmet Yılmaz', email: 'ahmet@example.com', role: 'Alumni' }
               }
             }
           }
@@ -78,7 +80,8 @@ const swaggerDefinition = {
     },
     '/api/users/{id}': {
       get: {
-        summary: 'ID ile Tek Kullanıcı Detayı Getir',
+        summary: 'ID ile Tek Kullanıcı Detayı Getir (JSON API)',
+        tags: ['API Users'],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
         ],
@@ -88,7 +91,8 @@ const swaggerDefinition = {
         }
       },
       put: {
-        summary: 'Kullanıcı Verisini Tamamen Güncelle (PUT)',
+        summary: 'Kullanıcı Verisini Tamamen Güncelle (PUT JSON API)',
+        tags: ['API Users'],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
         ],
@@ -109,7 +113,8 @@ const swaggerDefinition = {
         }
       },
       patch: {
-        summary: 'Kullanıcı Verisini Kısmen Güncelle (PATCH)',
+        summary: 'Kullanıcı Verisini Kısmen Güncelle (PATCH JSON API)',
+        tags: ['API Users'],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
         ],
@@ -130,7 +135,8 @@ const swaggerDefinition = {
         }
       },
       delete: {
-        summary: 'Belirli Kullanıcıyı Sil (Diğer Kayıtları Koru)',
+        summary: 'Belirli Kullanıcıyı Sil (JSON API)',
+        tags: ['API Users'],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
         ],
@@ -140,15 +146,51 @@ const swaggerDefinition = {
         }
       }
     },
+    '/users': {
+      get: {
+        summary: 'HTML Mezun & Kullanıcı Listesi Sayfası',
+        tags: ['Web Pages'],
+        responses: { 200: { description: 'HTML Görünümü' } }
+      }
+    },
+    '/users/{id}': {
+      get: {
+        summary: 'HTML Kullanıcı Detay Kartı Sayfası',
+        tags: ['Web Pages'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          200: { description: 'HTML Görünümü' },
+          404: { description: 'Kullanıcı Bulunamadı HTML Sayfası' }
+        }
+      }
+    },
+    '/home': {
+      get: {
+        summary: 'Ana Sayfa (Web Page)',
+        tags: ['Web Pages'],
+        responses: { 200: { description: 'HTML Ana Sayfa Görünümü' } }
+      }
+    },
+    '/about': {
+      get: {
+        summary: 'Hakkımızda Sayfası (Web Page)',
+        tags: ['Web Pages'],
+        responses: { 200: { description: 'HTML Hakkımızda Görünümü' } }
+      }
+    },
     '/Hello': {
       get: {
         summary: 'Hello World Yanıtı',
+        tags: ['Utilities'],
         responses: { 200: { description: 'OK' } }
       }
     },
     '/Hello/{name}': {
       get: {
-        summary: 'Isme Özel Karşılama',
+        summary: 'İsme Özel Karşılama',
+        tags: ['Utilities'],
         parameters: [
           { name: 'name', in: 'path', required: true, schema: { type: 'string' } }
         ],
@@ -158,6 +200,7 @@ const swaggerDefinition = {
     '/sum/{number1}/{number2}': {
       get: {
         summary: 'İki Sayının Toplamı',
+        tags: ['Utilities'],
         parameters: [
           { name: 'number1', in: 'path', required: true, schema: { type: 'number' } },
           { name: 'number2', in: 'path', required: true, schema: { type: 'number' } }
@@ -177,7 +220,6 @@ app.use(express.json());
 // Swagger UI rotası (/api/swagger)
 app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-
 // GET / — Ana sayfa, sistem durumu
 app.get('/', (req, res) => {
   res.send('ok');
@@ -192,35 +234,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ── REST API User Routes (ApiUserController) ──────────────
-app.get('/api/users', ApiUserController.getUsers);
-app.post('/api/users', ApiUserController.createUser);
-app.get('/api/users/:id', ApiUserController.getUserById);
-app.put('/api/users/:id', ApiUserController.updateUser);
-app.patch('/api/users/:id', ApiUserController.patchUser);
-app.delete('/api/users/:id', ApiUserController.deleteUser);
-
-// ── Web Page User Routes (UserController) ───────────────────
-app.get('/users', UserController.renderUserList);
-app.get('/users/:id', UserController.renderUserDetail);
-app.post('/users', UserController.createUser);
-app.put('/users/:id', UserController.updateUser);
-app.delete('/users/:id', UserController.deleteUser);
-app.get('/home', UserController.renderHome);
-app.get('/about', UserController.renderAbout);
-
-// GET /Hello
+// Utility Routes
 app.get('/Hello', (req, res) => {
   res.send('Hello , World!');
 });
 
-// GET /Hello/:name
 app.get('/Hello/:name', (req, res) => {
   const name = req.params.name;
   res.send(`Hello , ${name}`);
 });
 
-// GET /sum/:number1/:number2
 app.get('/sum/:number1/:number2', (req, res) => {
   const num1 = parseFloat(req.params.number1);
   const num2 = parseFloat(req.params.number2);
@@ -232,85 +255,9 @@ app.get('/sum/:number1/:number2', (req, res) => {
   res.send(`${num1 + num2}`);
 });
 
-
-
-
-
-
-// GET /Hello
-app.get('/Hello', (req, res) => {
-  res.send('Hello , World!');
-});
-
-// GET /Hello/:name
-app.get('/Hello/:name', (req, res) => {
-  const name = req.params.name;
-  res.send(`Hello , ${name}`);
-});
-
-// GET /sum/:number1/:number2
-app.get('/sum/:number1/:number2', (req, res) => {
-  const num1 = parseFloat(req.params.number1);
-  const num2 = parseFloat(req.params.number2);
-
-  if (isNaN(num1) || isNaN(num2)) {
-    return res.status(400).send('Lütfen geçerli sayılar girin.');
-  }
-
-  res.send(`${num1 + num2}`);
-});
-
-// GET /home - Temporary Main Page
-app.get('/home', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Temporary Main Page</title>
-      <style>
-        body { font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #1e1e2f; color: #fff; }
-        .container { text-align: center; background: #2a2a40; padding: 3rem 5rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
-        h1 { margin-bottom: 1rem; color: #6366f1; }
-        p { font-size: 1.1rem; color: #cbd5e1; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>Welcome to Alumni System</h1>
-        <p>This is a temporary main page.</p>
-      </div>
-    </body>
-    </html>
-  `);
-});
-
-// GET /about - Temporary About Page
-app.get('/about', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>About Us</title>
-      <style>
-        body { font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #1e1e2f; color: #fff; }
-        .container { text-align: center; background: #2a2a40; padding: 3rem 5rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); max-width: 600px; }
-        h1 { margin-bottom: 1rem; color: #10b981; }
-        p { font-size: 1.1rem; color: #cbd5e1; line-height: 1.6; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>About Alumni System</h1>
-        <p>This platform is designed to connect graduates, faster networking, and share career opportunities. Stay tuned for more features!</p>
-      </div>
-    </body>
-    </html>
-  `);
-});
+// Router Mounting
+app.use('/api/users', apiUserRoutes);
+app.use('/', userRoutes);
 
 // Sunucuyu başlat
 app.listen(PORT, () => {

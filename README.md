@@ -202,12 +202,15 @@ Alumni/
     ├── Dockerfile               # [Controller/DevOps] Container build configuration for Express service
     ├── package.json             # Node.js dependencies & scripts (express, pg, swagger-ui-express, cors)
     └── src/                     # Application source code
-        ├── index.js             # [Router / Entry Point] Registers Express routes and initializes server
+        ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI & mounts routes
         ├── models/              # Data model abstractions
         │   └── userModel.js     # [Model] Database-less User Model containing CRUD functions
-        └── controllers/         # Request handling and controller logic
-            ├── apiUserController.js  # [Controller] REST API Controller (JSON responses & API CRUD)
-            └── userController.js     # [Controller] Web Controller (HTML page rendering & web actions)
+        ├── controllers/         # Request handling and controller logic
+        │   ├── apiUserController.js  # [Controller] REST API Controller (JSON responses & API CRUD)
+        │   └── userController.js     # [Controller] Web Controller (HTML page rendering & web actions)
+        └── routes/              # Express Router definitions
+            ├── apiUserRoutes.js # [Router] Express Router for /api/users endpoints
+            └── userRoutes.js    # [Router] Express Router for /users, /home, /about web routes
 ```
 
 #### 📌 File-to-Layer Mapping Table:
@@ -217,7 +220,9 @@ Alumni/
 | **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
 | **`backend/src/controllers/apiUserController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations. |
 | **`backend/src/controllers/userController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering (`/users`, `/users/:id`, `/home`, `/about`) and web CRUD actions. |
-| **`backend/src/index.js`** | **Router / Entry Point** | Initializes Express server, registers routes, and delegates requests to controllers. |
+| **`backend/src/routes/apiUserRoutes.js`** | **Router** | Express Router mapping `/api/users` REST endpoints directly to `ApiUserController`. |
+| **`backend/src/routes/userRoutes.js`** | **Router** | Express Router mapping `/users`, `/home`, `/about` page routes directly to `UserController`. |
+| **`backend/src/index.js`** | **Entry Point** | Initializes Express server, configures Swagger UI OpenAPI specs, and mounts router modules. |
 | **`docker-compose.yml`** | **Model & Infrastructure** | Manages persistent PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
