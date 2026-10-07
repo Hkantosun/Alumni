@@ -216,6 +216,7 @@ const swaggerSpec = swaggerJsdoc({ swaggerDefinition, apis: [] });
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Swagger UI rotası (/api/swagger)
 app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

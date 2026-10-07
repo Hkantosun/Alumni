@@ -174,15 +174,15 @@ The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** archi
 ### 2. 👁️ View Layer
 - **Responsibility:** Formats and presents information back to the client or user interface.
 - **Implementation in Project:**
+  - **User View Module (`backend/src/views/userViews.js`):** Dedicated HTML template generator rendering the User Listing page (`renderUserListPage`) for `GET /users -> listing` and the User Created confirmation page (`renderUserCreatedPage`) for `POST /users -> creating`.
   - **JSON REST API View:** Formats output data structures as JSON responses for client consumption (e.g., list of users, health status payload).
   - **Swagger UI (`/api/swagger`):** Interactive OpenAPI documentation powered by `swagger-ui-express` for visualizing and testing endpoints visually.
-  - **HTML Views:** Server-side rendered HTML responses served for endpoints like `/home` and `/about`.
 
 ### 3. 🎮 Controller Layer
 - **Responsibility:** Receives incoming client HTTP requests, validates payloads, orchestrates business logic, interacts with the Model layer, and selects the View representation to return.
 - **Implementation in Project:**
   - **`ApiUserController` (`backend/src/controllers/apiUserController.js`):** Dedicated REST API controller handling JSON requests, HTTP status codes, payload validations, and CRUD operations (`getUsers`, `getUserById`, `createUser`, `updateUser`, `patchUser`, `deleteUser`).
-  - **`UserController` (`backend/src/controllers/userController.js`):** Dedicated Web controller rendering HTML user list pages (`/users`), user detail cards (`/users/:id`), main pages (`/home`, `/about`), and web CRUD actions.
+  - **`UserController` (`backend/src/controllers/userController.js`):** Dedicated Web controller rendering HTML user list pages (`GET /users -> listing`), user creation actions (`POST /users -> creating`), user detail cards (`/users/:id`), and main pages (`/home`, `/about`).
   - **Express Route Registration (`backend/src/index.js`):** Connects incoming endpoints to the respective Controller methods.
 
 ---
@@ -205,9 +205,11 @@ Alumni/
         ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI & mounts routes
         ├── models/              # Data model abstractions
         │   └── userModel.js     # [Model] Database-less User Model containing CRUD functions
+        ├── views/               # Presentation and HTML rendering templates
+        │   └── userViews.js     # [View] User Views module (renderUserListPage & renderUserCreatedPage)
         ├── controllers/         # Request handling and controller logic
         │   ├── apiUserController.js  # [Controller] REST API Controller (JSON responses & API CRUD)
-        │   └── userController.js     # [Controller] Web Controller (HTML page rendering & web actions)
+        │   └── userController.js     # [Controller] Web Controller (GET /users listing & POST /users creating)
         └── routes/              # Express Router definitions
             ├── apiUserRoutes.js # [Router] Express Router for /api/users endpoints
             └── userRoutes.js    # [Router] Express Router for /users, /home, /about web routes
@@ -218,8 +220,9 @@ Alumni/
 | Path / File | MVC Component | Description & Responsibilities |
 |---|---|---|
 | **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
+| **`backend/src/views/userViews.js`** | **View** | Generates HTML page templates for User Listing (`GET /users -> listing`) and Creation Confirmation (`POST /users -> creating`). |
 | **`backend/src/controllers/apiUserController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations. |
-| **`backend/src/controllers/userController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering (`/users`, `/users/:id`, `/home`, `/about`) and web CRUD actions. |
+| **`backend/src/controllers/userController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering (`GET /users -> listing`, `POST /users -> creating`, `/users/:id`, `/home`, `/about`). |
 | **`backend/src/routes/apiUserRoutes.js`** | **Router** | Express Router mapping `/api/users` REST endpoints directly to `ApiUserController`. |
 | **`backend/src/routes/userRoutes.js`** | **Router** | Express Router mapping `/users`, `/home`, `/about` page routes directly to `UserController`. |
 | **`backend/src/index.js`** | **Entry Point** | Initializes Express server, configures Swagger UI OpenAPI specs, and mounts router modules. |
