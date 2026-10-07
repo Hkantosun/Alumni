@@ -167,8 +167,8 @@ The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** archi
 ### 1. 🗄️ Model Layer
 - **Responsibility:** Represents data models, database state, entity rules, and persistence operations.
 - **Implementation in Project:**
-  - **Database Persistence:** Managed via **PostgreSQL** (`alumni_db` running on port `5433:5432` in Docker Compose) using the `pg` database driver.
-  - **In-Memory Store:** Prototyped data structures (`users` array in `backend/src/index.js`) representing User entities with fields such as `id`, `name`, `email`, `createdAt`, and `updatedAt`.
+  - **User Model Module (`backend/src/models/userModel.js`):** Database-less in-memory data model encapsulating entity state and full CRUD logic (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`).
+  - **Database Persistence:** Prepared for **PostgreSQL** integration (`alumni_db` running on port `5433:5432` in Docker Compose) using the `pg` database driver.
   - **Domain Entities:** User data models covering **Alumni**, **Students**, and **Academic Staff**.
 
 ### 2. 👁️ View Layer
@@ -182,11 +182,11 @@ The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** archi
 - **Responsibility:** Receives incoming client HTTP requests, validates payloads, orchestrates business logic, interacts with the Model layer, and selects the View representation to return.
 - **Implementation in Project:**
   - **Express Route Handlers (`backend/src/index.js`):** Controller functions mapping HTTP verbs to endpoint actions:
-    - `POST /api/users`: Validates body payload and creates new user records.
-    - `GET /api/users`: Handles query parameters (`sortBy`, `order`), sorting logic, and list formatting.
-    - `GET /api/users/:id`: Fetches specific entity by ID.
-    - `PUT /api/users/:id` & `PATCH /api/users/:id`: Implements full and partial update operations.
-    - `DELETE /api/users/:id`: Performs resource removal while keeping remaining entities intact.
+    - `POST /api/users`: Validates body payload and calls `UserModel.create()`.
+    - `GET /api/users`: Handles query parameters (`sortBy`, `order`) and calls `UserModel.getAll()`.
+    - `GET /api/users/:id`: Fetches specific entity via `UserModel.getById()`.
+    - `PUT /api/users/:id` & `PATCH /api/users/:id`: Implements full and partial update operations via `UserModel.update()` and `UserModel.patch()`.
+    - `DELETE /api/users/:id`: Performs resource removal via `UserModel.delete()`.
     - `GET /api/health` & `GET /sum/:number1/:number2`: Serves health diagnostics and utility calculations.
 
 ---
@@ -206,17 +206,17 @@ Alumni/
     ├── Dockerfile               # [Controller/DevOps] Container build configuration for Express service
     ├── package.json             # Node.js dependencies & scripts (express, pg, swagger-ui-express, cors)
     └── src/                     # Application source code
-        └── index.js             # [Model + View + Controller] Application entry point:
-                                 #   ├── MODEL: In-memory store (`users`), PostgreSQL connection logic
-                                 #   ├── VIEW: JSON responses (`res.json`), Swagger UI (`/api/swagger`), HTML views (`/home`, `/about`)
-                                 #   └── CONTROLLER: Express endpoint handlers (`app.get`, `app.post`, `app.put`, `app.patch`, `app.delete`)
+        ├── index.js             # [View + Controller] Express server entry point & route handlers
+        └── models/              # Data model abstractions
+            └── userModel.js     # [Model] Database-less User Model containing CRUD functions
 ```
 
 #### 📌 File-to-Layer Mapping Table:
 
 | Path / File | MVC Component | Description & Responsibilities |
 |---|---|---|
-| **`backend/src/index.js`** | **Model / View / Controller** | Main entry point containing data models (`users` array), view definitions (JSON/HTML/Swagger), and controller route handlers. |
+| **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`). |
+| **`backend/src/index.js`** | **View / Controller** | Entry point managing Express route handlers (Controllers) and JSON/HTML/Swagger responses (Views). |
 | **`docker-compose.yml`** | **Model & Infrastructure** | Manages persistent PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |

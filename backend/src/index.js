@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const UserModel = require('./models/userModel');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -189,9 +190,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Database olmadan bellek içi (in-memory) veri deposu (Başlangıçta tamamen boş)
-const users = [];
-
 // POST /api/users - POST ile gönderilen veriyi bellek içine kaydet
 app.post('/api/users', (req, res) => {
   const payload = req.body;
@@ -202,13 +200,7 @@ app.post('/api/users', (req, res) => {
     });
   }
 
-  const newUser = {
-    id: users.length + 1,
-    ...payload,
-    createdAt: new Date().toISOString()
-  };
-
-  users.push(newUser);
+  const newUser = UserModel.create(payload);
 
   res.status(201).json({
     message: 'Veri başarıyla alındı ve kaydedildi',
@@ -220,22 +212,7 @@ app.post('/api/users', (req, res) => {
 app.get('/api/users', (req, res) => {
   const { sortBy = 'id', order = 'asc' } = req.query;
 
-  // Diziyi kopyalayıp seçilen alana ve yöne göre sırala
-  const sortedUsers = [...users].sort((a, b) => {
-    let valA = a[sortBy];
-    let valB = b[sortBy];
-
-    if (valA === undefined) return 1;
-    if (valB === undefined) return -1;
-
-    if (typeof valA === 'string') {
-      return order === 'desc' 
-        ? valB.localeCompare(valA) 
-        : valA.localeCompare(valB);
-    }
-
-    return order === 'desc' ? valB - valA : valA - valB;
-  });
+  const sortedUsers = UserModel.getAll({ sortBy, order });
 
   res.json({
     count: sortedUsers.length,
@@ -248,30 +225,21 @@ app.get('/api/users', (req, res) => {
 // PUT /api/users/:id - Tam güncelleme (Full update)
 app.put('/api/users/:id', (req, res) => {
   const userId = parseInt(req.params.id, 10);
-  const userIndex = users.findIndex(u => u.id === userId);
-
-  if (userIndex === -1) {
-    return res.status(404).json({
-      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
-    });
-  }
-
   const payload = req.body;
+
   if (!payload || Object.keys(payload).length === 0) {
     return res.status(400).json({
       error: 'PUT isteğinde güncellenecek veri (body) boş olamaz.'
     });
   }
 
-  // PUT: Tüm nesneyi yenisiyle değiştir (id ve createdAt korunur)
-  const updatedUser = {
-    id: userId,
-    ...payload,
-    createdAt: users[userIndex].createdAt,
-    updatedAt: new Date().toISOString()
-  };
+  const updatedUser = UserModel.update(userId, payload);
 
-  users[userIndex] = updatedUser;
+  if (!updatedUser) {
+    return res.status(404).json({
+      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
+    });
+  }
 
   res.json({
     message: 'Kullanıcı verisi tamamen güncellendi (PUT)',
@@ -282,30 +250,21 @@ app.put('/api/users/:id', (req, res) => {
 // PATCH /api/users/:id - Kısmi güncelleme (Partial update)
 app.patch('/api/users/:id', (req, res) => {
   const userId = parseInt(req.params.id, 10);
-  const userIndex = users.findIndex(u => u.id === userId);
-
-  if (userIndex === -1) {
-    return res.status(404).json({
-      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
-    });
-  }
-
   const payload = req.body;
+
   if (!payload || Object.keys(payload).length === 0) {
     return res.status(400).json({
       error: 'PATCH isteğinde güncellenecek veri alanı bulunamadı.'
     });
   }
 
-  // PATCH: Sadece gönderilen alanları mevcut veriyle birleştir
-  const updatedUser = {
-    ...users[userIndex],
-    ...payload,
-    id: userId, // ID değiştirilemez
-    updatedAt: new Date().toISOString()
-  };
+  const updatedUser = UserModel.patch(userId, payload);
 
-  users[userIndex] = updatedUser;
+  if (!updatedUser) {
+    return res.status(404).json({
+      error: `ID'si ${userId} olan kullanıcı bulunamadı.`
+    });
+  }
 
   res.json({
     message: 'Kullanıcı verisi kısmen güncellendi (PATCH)',
@@ -316,7 +275,7 @@ app.patch('/api/users/:id', (req, res) => {
 // GET /api/users/:id - Belirli bir kullanıcıyı ID'sine göre getir
 app.get('/api/users/:id', (req, res) => {
   const userId = parseInt(req.params.id, 10);
-  const user = users.find(u => u.id === userId);
+  const user = UserModel.getById(userId);
 
   if (!user) {
     return res.status(404).json({
@@ -332,21 +291,18 @@ app.get('/api/users/:id', (req, res) => {
 // DELETE /api/users/:id - Belirli bir kullanıcıyı sil (Diğer kayıtlı kullanıcılar korunur)
 app.delete('/api/users/:id', (req, res) => {
   const userId = parseInt(req.params.id, 10);
-  const userIndex = users.findIndex(u => u.id === userId);
+  const deletedUser = UserModel.delete(userId);
 
-  if (userIndex === -1) {
+  if (!deletedUser) {
     return res.status(404).json({
       error: `ID'si ${userId} olan kullanıcı bulunamadı.`
     });
   }
 
-  // Sadece hedeflenen kullanıcı listeden çıkarılır
-  const deletedUser = users.splice(userIndex, 1)[0];
-
   res.json({
     message: `ID'si ${userId} olan kullanıcı başarıyla silindi.`,
     deletedUser,
-    remainingCount: users.length
+    remainingCount: UserModel.count()
   });
 });
 
