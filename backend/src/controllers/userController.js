@@ -1,9 +1,14 @@
 /**
  * UserController - Web Page Controller for User resources
- * Orchestrates request processing and delegates HTML page generation to the View layer (UserViews).
- * Routes:
- *   - GET /users  -> renderUserList (listing view)
- *   - POST /users -> createUser (creating action & view)
+ * Full CRUD Operations integrated with View Layer (UserViews):
+ *   1. READ ALL   (GET /users)            -> renderUserList
+ *   2. READ ONE   (GET /users/:id)        -> renderUserDetail
+ *   3. EDIT FORM  (GET /users/:id/edit)   -> renderEditForm
+ *   4. CREATE     (POST /users)           -> createUser
+ *   5. UPDATE     (POST /users/:id/update -> updateUser
+ *                  & PUT /users/:id)
+ *   6. DELETE     (POST /users/:id/delete -> deleteUser
+ *                  & DELETE /users/:id)
  */
 
 const UserModel = require('../models/userModel');
@@ -11,49 +16,17 @@ const UserViews = require('../views/userViews');
 
 const UserController = {
   /**
-   * GET /users -> listing view
-   * Fetch all users from UserModel and render the HTML Listing View.
+   * 1. READ ALL (GET /users)
    */
   renderUserList(req, res) {
     const { sortBy = 'id', order = 'asc' } = req.query;
     const users = UserModel.getAll({ sortBy, order });
-    
-    // Render Listing View via View Layer
     const htmlView = UserViews.renderUserListPage(users);
     res.send(htmlView);
   },
 
   /**
-   * POST /users -> creating action & view
-   * Receive user payload from request body, create user via UserModel, and render creation View.
-   */
-  createUser(req, res) {
-    const payload = req.body;
-
-    if (!payload || !payload.name || Object.keys(payload).length === 0) {
-      return res.status(400).send(`
-        <!DOCTYPE html>
-        <html lang="tr">
-        <body style="font-family: sans-serif; background: #0f172a; color: #ef4444; padding: 3rem; text-align: center;">
-          <h2>Hata: Boş veya Geçersiz Veri</h2>
-          <p>Lütfen isim ve e-posta alanlarını doldurarak tekrar deneyiniz.</p>
-          <a href="/users" style="color: #6366f1;">Forma Dön</a>
-        </body>
-        </html>
-      `);
-    }
-
-    // Create user entity in Model Layer
-    const newUser = UserModel.create(payload);
-
-    // Render Creating Success View via View Layer
-    const htmlView = UserViews.renderUserCreatedPage(newUser);
-    res.send(htmlView);
-  },
-
-  /**
-   * GET /users/:id
-   * Render single user detail HTML page.
+   * 2. READ ONE (GET /users/:id)
    */
   renderUserDetail(req, res) {
     const userId = parseInt(req.params.id, 10);
@@ -73,31 +46,103 @@ const UserController = {
       `);
     }
 
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Kullanıcı Detayı - ${user.name || user.id}</title>
-        <style>
-          body { font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 3rem; }
-          .card { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
-          h2 { color: #38bdf8; margin-top: 0; }
-          a { color: #6366f1; text-decoration: none; display: inline-block; margin-top: 1rem; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <h2>👤 ${user.name || 'Kullanıcı #' + user.id}</h2>
-          <p><strong>ID:</strong> ${user.id}</p>
-          <p><strong>E-posta:</strong> ${user.email || 'Belirtilmemiş'}</p>
-          <p><strong>Rol:</strong> ${user.role || 'Alumni'}</p>
-          <p><strong>Kayıt Tarihi:</strong> ${user.createdAt}</p>
-          <a href="/users">← Listeye Dön</a>
-        </div>
-      </body>
-      </html>
-    `);
+    const htmlView = UserViews.renderUserDetailPage(user);
+    res.send(htmlView);
+  },
+
+  /**
+   * 3. EDIT FORM (GET /users/:id/edit)
+   */
+  renderEditForm(req, res) {
+    const userId = parseInt(req.params.id, 10);
+    const user = UserModel.getById(userId);
+
+    if (!user) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <body style="font-family: sans-serif; background: #0f172a; color: #ef4444; text-align: center; padding: 50px;">
+          <h1>404 - Düzenlenecek Kullanıcı Bulunamadı</h1>
+          <a href="/users" style="color: #6366f1;">Listeye Dön</a>
+        </body>
+        </html>
+      `);
+    }
+
+    const htmlView = UserViews.renderUserEditPage(user);
+    res.send(htmlView);
+  },
+
+  /**
+   * 4. CREATE (POST /users)
+   */
+  createUser(req, res) {
+    const payload = req.body;
+
+    if (!payload || !payload.name || Object.keys(payload).length === 0) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <body style="font-family: sans-serif; background: #0f172a; color: #ef4444; padding: 3rem; text-align: center;">
+          <h2>Hata: Boş veya Geçersiz Veri</h2>
+          <p>Lütfen isim ve e-posta alanlarını doldurarak tekrar deneyiniz.</p>
+          <a href="/users" style="color: #6366f1;">Forma Dön</a>
+        </body>
+        </html>
+      `);
+    }
+
+    const newUser = UserModel.create(payload);
+    const htmlView = UserViews.renderUserCreatedPage(newUser);
+    res.send(htmlView);
+  },
+
+  /**
+   * 5. UPDATE (POST /users/:id/update & PUT /users/:id)
+   */
+  updateUser(req, res) {
+    const userId = parseInt(req.params.id, 10);
+    const payload = req.body;
+
+    const updatedUser = UserModel.update(userId, payload);
+
+    if (!updatedUser) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <body style="font-family: sans-serif; background: #0f172a; color: #ef4444; text-align: center; padding: 50px;">
+          <h1>404 - Güncellenecek Kullanıcı Bulunamadı</h1>
+          <a href="/users" style="color: #6366f1;">Listeye Dön</a>
+        </body>
+        </html>
+      `);
+    }
+
+    const htmlView = UserViews.renderUserUpdatedPage(updatedUser);
+    res.send(htmlView);
+  },
+
+  /**
+   * 6. DELETE (POST /users/:id/delete & DELETE /users/:id)
+   */
+  deleteUser(req, res) {
+    const userId = parseInt(req.params.id, 10);
+    const deletedUser = UserModel.delete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <body style="font-family: sans-serif; background: #0f172a; color: #ef4444; text-align: center; padding: 50px;">
+          <h1>404 - Silinecek Kullanıcı Bulunamadı</h1>
+          <a href="/users" style="color: #6366f1;">Listeye Dön</a>
+        </body>
+        </html>
+      `);
+    }
+
+    const htmlView = UserViews.renderUserDeletedPage(deletedUser);
+    res.send(htmlView);
   },
 
   /**
@@ -154,30 +199,6 @@ const UserController = {
       </body>
       </html>
     `);
-  },
-
-  /**
-   * PUT /users/:id
-   */
-  updateUser(req, res) {
-    const userId = parseInt(req.params.id, 10);
-    const updatedUser = UserModel.update(userId, req.body);
-    if (!updatedUser) {
-      return res.status(404).send('Güncellenecek kullanıcı bulunamadı.');
-    }
-    res.redirect(`/users/${userId}`);
-  },
-
-  /**
-   * DELETE /users/:id
-   */
-  deleteUser(req, res) {
-    const userId = parseInt(req.params.id, 10);
-    const deletedUser = UserModel.delete(userId);
-    if (!deletedUser) {
-      return res.status(404).send('Silinecek kullanıcı bulunamadı.');
-    }
-    res.redirect('/users');
   }
 };
 

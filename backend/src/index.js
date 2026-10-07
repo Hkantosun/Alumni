@@ -148,15 +148,35 @@ const swaggerDefinition = {
     },
     '/users': {
       get: {
-        summary: 'HTML Mezun & Kullanıcı Listesi Sayfası',
-        tags: ['Web Pages'],
+        summary: 'HTML Mezun & Kullanıcı Listesi Sayfası (Read All View)',
+        tags: ['Web Pages (CRUD)'],
         responses: { 200: { description: 'HTML Görünümü' } }
+      },
+      post: {
+        summary: 'Form Üzerinden Yeni Kullanıcı Oluştur (Create Action)',
+        tags: ['Web Pages (CRUD)'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/x-www-form-urlencoded': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                  role: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: { 200: { description: 'Kullanıcı Oluşturuldu HTML Sayfası' } }
       }
     },
     '/users/{id}': {
       get: {
-        summary: 'HTML Kullanıcı Detay Kartı Sayfası',
-        tags: ['Web Pages'],
+        summary: 'HTML Kullanıcı Detay Kartı Sayfası (Read One View)',
+        tags: ['Web Pages (CRUD)'],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
         ],
@@ -164,6 +184,36 @@ const swaggerDefinition = {
           200: { description: 'HTML Görünümü' },
           404: { description: 'Kullanıcı Bulunamadı HTML Sayfası' }
         }
+      }
+    },
+    '/users/{id}/edit': {
+      get: {
+        summary: 'HTML Kullanıcı Düzenleme Formu (Update Form View)',
+        tags: ['Web Pages (CRUD)'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: { 200: { description: 'Düzenleme Formu HTML Görünümü' } }
+      }
+    },
+    '/users/{id}/update': {
+      post: {
+        summary: 'Form Üzerinden Kullanıcı Güncelle (Update Action)',
+        tags: ['Web Pages (CRUD)'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: { 200: { description: 'Güncellendi HTML Sayfası' } }
+      }
+    },
+    '/users/{id}/delete': {
+      post: {
+        summary: 'Form Üzerinden Kullanıcı Sil (Delete Action)',
+        tags: ['Web Pages (CRUD)'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: { 200: { description: 'Silindi HTML Sayfası' } }
       }
     },
     '/home': {
