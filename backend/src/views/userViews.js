@@ -88,6 +88,13 @@ const UserViews = {
             <span style="color: var(--muted);">Web MVC CRUD View</span>
           </div>
 
+          <div style="display: flex; gap: 1rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border);">
+            <a href="/home" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏠 Ana Sayfa</a>
+            <a href="/users" style="color: var(--accent); text-decoration: none; font-weight: 600;">👥 Mezunlar & Kullanıcılar</a>
+            <a href="/announcements" style="color: var(--muted); text-decoration: none; font-weight: 600;">📢 Duyurular</a>
+            <a href="/api/swagger" target="_blank" style="color: var(--muted); text-decoration: none; font-weight: 600;">📚 Swagger API Dokümanı</a>
+          </div>
+
           <!-- CREATE FORM (POST /users) -->
           <div class="card">
             <h2>➕ Yeni Kullanıcı Oluştur (Create Action)</h2>

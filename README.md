@@ -204,15 +204,21 @@ Alumni/
     └── src/                     # Application source code
         ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI & mounts routes
         ├── models/              # Data model abstractions
-        │   └── userModel.js     # [Model] Database-less User Model containing CRUD functions
+        │   ├── userModel.js     # [Model] Database-less User Model containing CRUD functions
+        │   └── announcementModel.js # [Model] Database-less Announcement Model containing CRUD functions
         ├── views/               # Presentation and HTML rendering templates
-        │   └── userViews.js     # [View] User Views module (renderUserListPage & renderUserCreatedPage)
+        │   ├── userViews.js     # [View] User Views module (renderUserListPage, renderUserDetailPage, etc.)
+        │   └── announcementViews.js # [View] Announcement Views module (renderAnnouncementListPage, etc.)
         ├── controllers/         # Request handling and controller logic
-        │   ├── apiUserController.js  # [Controller] REST API Controller (JSON responses & API CRUD)
-        │   └── userController.js     # [Controller] Web Controller (GET /users listing & POST /users creating)
+        │   ├── apiUserController.js          # [Controller] REST API Controller for /api/users
+        │   ├── userController.js             # [Controller] Web Controller for /users HTML pages
+        │   ├── apiAnnouncementController.js  # [Controller] REST API Controller for /api/announcements
+        │   └── announcementController.js     # [Controller] Web Controller for /announcements HTML pages
         └── routes/              # Express Router definitions
-            ├── apiUserRoutes.js # [Router] Express Router for /api/users endpoints
-            └── userRoutes.js    # [Router] Express Router for /users, /home, /about web routes
+            ├── apiUserRoutes.js         # [Router] Express Router for /api/users endpoints
+            ├── userRoutes.js            # [Router] Express Router for /users, /home, /about web routes
+            ├── apiAnnouncementRoutes.js # [Router] Express Router for /api/announcements endpoints
+            └── announcementRoutes.js    # [Router] Express Router for /announcements web routes
 ```
 
 #### 📌 File-to-Layer Mapping Table:
@@ -220,11 +226,17 @@ Alumni/
 | Path / File | MVC Component | Description & Responsibilities |
 |---|---|---|
 | **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
-| **`backend/src/views/userViews.js`** | **View** | Generates HTML page templates for User Listing (`GET /users -> listing`) and Creation Confirmation (`POST /users -> creating`). |
-| **`backend/src/controllers/apiUserController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations. |
-| **`backend/src/controllers/userController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering (`GET /users -> listing`, `POST /users -> creating`, `/users/:id`, `/home`, `/about`). |
+| **`backend/src/models/announcementModel.js`** | **Model** | Encapsulates Announcement entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
+| **`backend/src/views/userViews.js`** | **View** | Generates HTML page templates for User Listing (`GET /users`), Details, Edit Form, and CRUD response pages. |
+| **`backend/src/views/announcementViews.js`** | **View** | Generates HTML page templates for Announcement Listing (`GET /announcements`), Details, Edit Form, and CRUD response pages. |
+| **`backend/src/controllers/apiUserController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations for Users. |
+| **`backend/src/controllers/userController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering for Users (`GET /users`, `POST /users`, `/users/:id`, `/home`, `/about`). |
+| **`backend/src/controllers/apiAnnouncementController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations for Announcements. |
+| **`backend/src/controllers/announcementController.js`** | **Controller (Web)** | Web Controller handling HTML page rendering for Announcements (`GET /announcements`, `POST /announcements`, `/announcements/:id`). |
 | **`backend/src/routes/apiUserRoutes.js`** | **Router** | Express Router mapping `/api/users` REST endpoints directly to `ApiUserController`. |
 | **`backend/src/routes/userRoutes.js`** | **Router** | Express Router mapping `/users`, `/home`, `/about` page routes directly to `UserController`. |
+| **`backend/src/routes/apiAnnouncementRoutes.js`** | **Router** | Express Router mapping `/api/announcements` REST endpoints directly to `ApiAnnouncementController`. |
+| **`backend/src/routes/announcementRoutes.js`** | **Router** | Express Router mapping `/announcements` page routes directly to `AnnouncementController`. |
 | **`backend/src/index.js`** | **Entry Point** | Initializes Express server, configures Swagger UI OpenAPI specs, and mounts router modules. |
 | **`docker-compose.yml`** | **Model & Infrastructure** | Manages persistent PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |

@@ -7,6 +7,8 @@ const swaggerJsdoc = require('swagger-jsdoc');
 
 const apiUserRoutes = require('./routes/apiUserRoutes');
 const userRoutes = require('./routes/userRoutes');
+const apiAnnouncementRoutes = require('./routes/apiAnnouncementRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -237,6 +239,62 @@ const swaggerDefinition = {
         responses: { 200: { description: 'OK' } }
       }
     },
+    '/api/announcements': {
+      get: {
+        summary: 'Tüm Duyuruları Listele (JSON API)',
+        tags: ['API Announcements'],
+        parameters: [
+          { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Kategoriye göre filtrele' },
+          { name: 'sortBy', in: 'query', schema: { type: 'string', default: 'id' } },
+          { name: 'order', in: 'query', schema: { type: 'string', enum: ['asc', 'desc'], default: 'asc' } }
+        ],
+        responses: { 200: { description: 'Sıralı ve filtreli duyuru listesi' } }
+      },
+      post: {
+        summary: 'Yeni Duyuru Oluştur (JSON API)',
+        tags: ['API Announcements'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { title: 'Mezunlar Günü 2026', content: 'Etkinlik 15 Mayısta.', category: 'Etkinlik', author: 'Mezunlar Derneği' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'Duyuru oluşturuldu' } }
+      }
+    },
+    '/api/announcements/{id}': {
+      get: {
+        summary: 'ID ile Tek Duyuru Detayı Getir (JSON API)',
+        tags: ['API Announcements'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+        ],
+        responses: { 200: { description: 'Duyuru detay bilgisi' }, 404: { description: 'Duyuru bulunamadı' } }
+      },
+      put: {
+        summary: 'Duyuru Verisini Tamamen Güncelle (PUT JSON API)',
+        tags: ['API Announcements'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 200: { description: 'Duyuru güncellendi' } }
+      },
+      patch: {
+        summary: 'Duyuru Verisini Kısmen Güncelle (PATCH JSON API)',
+        tags: ['API Announcements'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 200: { description: 'Duyuru kısmen güncellendi' } }
+      },
+      delete: {
+        summary: 'Duyuruyu Sil (DELETE JSON API)',
+        tags: ['API Announcements'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 200: { description: 'Duyuru silindi' } }
+      }
+    },
     '/Hello/{name}': {
       get: {
         summary: 'İsme Özel Karşılama',
@@ -308,7 +366,9 @@ app.get('/sum/:number1/:number2', (req, res) => {
 
 // Router Mounting
 app.use('/api/users', apiUserRoutes);
+app.use('/api/announcements', apiAnnouncementRoutes);
 app.use('/', userRoutes);
+app.use('/', announcementRoutes);
 
 // Sunucuyu başlat
 app.listen(PORT, () => {
