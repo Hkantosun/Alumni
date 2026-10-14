@@ -8,7 +8,9 @@
 - [About the Project](#-about-the-project)
 - [Who Uses This System](#-who-uses-this-system)
 - [The One-Command Rule](#-the-one-command-rule)
+- [API Documentation & Swagger UI](#-api-documentation--swagger-ui)
 - [Tech Stack](#-tech-stack)
+- [Database Design Documentation (ddd.md)](#-database-design-documentation-dddmd)
 - [MVC Architecture](#-mvc-architecture)
 - [Core Requirements](#-core-requirements-defined-by-the-instructor)
 - [Additional Features](#-additional-features-developer-choice)
@@ -138,6 +140,26 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 
 ---
 
+## 🗄️ Database Design Documentation (`ddd.md`)
+
+Comprehensive database schema and relational entity specifications are documented in **[`ddd.md`](./ddd.md)**:
+
+- 📊 **Entity Relationship (ER) Diagram:** Complete Mermaid diagram illustrating all entities, cardinality, and relationships.
+- 📋 **Relational Tables & Attributes:**
+  - `departments` (Academic departments and faculties)
+  - `users` (Core authentication and user identity)
+  - `alumni_profiles`, `student_profiles`, `academic_profiles` (Role-specific 1:1 profile extensions)
+  - `job_experiences` & `job_postings` (Careers, past roles, and job/internship opportunities)
+  - `mentorship_requests` (Mentorship connections and statuses)
+  - `events` & `event_rsvps` (Alumni/student events and attendance tracking)
+  - `announcements` (Departmental and general announcements)
+  - `direct_messages` (Communication between alumni and students)
+- 🔒 **Integrity & Optimization:** Foreign key cascades, check constraints, 3NF normalization, and recommended database indexes.
+
+> *Note:* The application currently utilizes in-memory models (`userModel.js`, `announcementModel.js`). `ddd.md` serves as the logical design blueprint for future database persistence.
+
+---
+
 ## 🏛 MVC Architecture
 
 The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** architectural pattern to separate data persistence, presentation logic, and request routing/business rules.
@@ -193,6 +215,7 @@ The project tree structure and the mapping of each directory/file to its corresp
 
 ```
 Alumni/
+├── ddd.md                       # Database Design Documentation (ER diagram & schemas)
 ├── docker-compose.yml           # [DevOps] Container orchestration for Express API
 ├── .env                         # [Config] Server environment configuration (PORT)
 ├── README.md                    # Project documentation & MVC architecture
@@ -242,6 +265,7 @@ Alumni/
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
 | **`.env`** | **Configuration** | Stores port and environment configurations. |
+| **`ddd.md`** | **Model & Architecture** | Comprehensive Database Design Documentation containing Mermaid ER diagram, table schemas, and data dictionary. |
 
 ---
 
