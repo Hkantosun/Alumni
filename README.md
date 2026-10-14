@@ -122,19 +122,19 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 - **Framework:** Express.js
 - Handles REST API endpoints, business logic, and communication with the database
 
-### Database
-- **PostgreSQL**
-- Relational database, well suited for modeling relationships between alumni, students, academic staff, departments, and job history
+### Data Storage
+- **In-Memory Data Store (No Database)**
+- Native JavaScript memory structures for managing models and entities without external database overhead
 
 ### Frontend
 - **HTML5 & CSS3**
 - **Bootstrap / Tailwind CSS** for responsive, modern UI styling
 
 ### DevOps & Tooling
-- **Docker & Docker Compose** — containerization of all services, required for the one-command startup rule
+- **Docker & Docker Compose** — containerization of services, required for the one-command startup rule
 - **Git & GitHub** — version control and collaboration
 - **Antigravity** — development environment used to build the project
-- **.env files** — used for environment variables (e.g., database credentials), excluded from version control via `.gitignore`
+- **.env files** — used for environment variables (e.g., PORT), excluded from version control via `.gitignore`
 
 ---
 
@@ -159,17 +159,17 @@ The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** archi
                      v                             v
 +--------------------------+             +--------------------------+
 |       MODEL LAYER        |             |        VIEW LAYER        |
-|  In-Memory / PostgreSQL  |             |  JSON API Responses      |
-|  User & Alumni Schema    |             |  Swagger UI & Web Views  |
+|  In-Memory Data Models   |             |  JSON API Responses      |
+|  User & Announcement     |             |  Swagger UI & Web Views  |
 +--------------------------+             +--------------------------+
 ```
 
 ### 1. 🗄️ Model Layer
-- **Responsibility:** Represents data models, database state, entity rules, and persistence operations.
+- **Responsibility:** Represents data models, entity rules, and in-memory persistence operations.
 - **Implementation in Project:**
   - **User Model Module (`backend/src/models/userModel.js`):** Database-less in-memory data model encapsulating entity state and full CRUD logic (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`).
-  - **Database Persistence:** Prepared for **PostgreSQL** integration (`alumni_db` running on port `5433:5432` in Docker Compose) using the `pg` database driver.
-  - **Domain Entities:** User data models covering **Alumni**, **Students**, and **Academic Staff**.
+  - **Announcement Model Module (`backend/src/models/announcementModel.js`):** Database-less in-memory announcement model with full CRUD logic (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`).
+  - **Domain Entities:** User and Announcement data models covering **Alumni**, **Students**, and **Academic Staff**.
 
 ### 2. 👁️ View Layer
 - **Responsibility:** Formats and presents information back to the client or user interface.
@@ -193,14 +193,14 @@ The project tree structure and the mapping of each directory/file to its corresp
 
 ```
 Alumni/
-├── docker-compose.yml           # [Model/DevOps] Container orchestration (PostgreSQL DB & Express API)
-├── .env                         # [Model/Config] Database credentials and server environment configuration
+├── docker-compose.yml           # [DevOps] Container orchestration for Express API
+├── .env                         # [Config] Server environment configuration (PORT)
 ├── README.md                    # Project documentation & MVC architecture
 ├── implementation_plan.md       # Development roadmap & feature specifications
 ├── LICENSE                      # Open-source license file
 └── backend/                     # Backend application directory
-    ├── Dockerfile               # [Controller/DevOps] Container build configuration for Express service
-    ├── package.json             # Node.js dependencies & scripts (express, pg, swagger-ui-express, cors)
+    ├── Dockerfile               # [DevOps] Container build configuration for Express service
+    ├── package.json             # Node.js dependencies & scripts (express, swagger-ui-express, cors)
     └── src/                     # Application source code
         ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI & mounts routes
         ├── models/              # Data model abstractions
@@ -238,10 +238,10 @@ Alumni/
 | **`backend/src/routes/apiAnnouncementRoutes.js`** | **Router** | Express Router mapping `/api/announcements` REST endpoints directly to `ApiAnnouncementController`. |
 | **`backend/src/routes/announcementRoutes.js`** | **Router** | Express Router mapping `/announcements` page routes directly to `AnnouncementController`. |
 | **`backend/src/index.js`** | **Entry Point** | Initializes Express server, configures Swagger UI OpenAPI specs, and mounts router modules. |
-| **`docker-compose.yml`** | **Model & Infrastructure** | Manages persistent PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
-| **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
+| **`docker-compose.yml`** | **Infrastructure** | Manages backend container (`alumni_backend`). |
+| **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
-| **`.env`** | **Model & Configuration** | Stores database URLs, ports, and secret configurations for data connectivity. |
+| **`.env`** | **Configuration** | Stores port and environment configurations. |
 
 ---
 
