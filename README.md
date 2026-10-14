@@ -128,7 +128,7 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 ### Database
 - **PostgreSQL 16 (Dockerized)**
 - Containerized relational database (`alumni_db` running on port `5433:5432` in Docker Compose)
-- In-memory data model layer currently active; full relational persistence ready via `pg` driver and `ddd.md` schema
+- Full relational persistence active via `pg` connection pool; CRUD interfaces query PostgreSQL tables directly as specified in `ddd.md`
 
 ### Frontend
 - **HTML5 & CSS3**
@@ -157,7 +157,7 @@ Comprehensive database schema and relational entity specifications are documente
   - `announcements` (Departmental and general announcements)
 - 🔒 **Integrity & Optimization:** Foreign key cascades, check constraints, 3NF normalization, and recommended database indexes.
 
-> *Note:* The application currently utilizes in-memory models (`userModel.js`, `announcementModel.js`). `ddd.md` serves as the logical design blueprint for future database persistence.
+> *Note:* The application's CRUD models (`userModel.js`, `announcementModel.js`) are fully connected to PostgreSQL (`users` and `announcements` tables) matching the `ddd.md` specification.
 
 ---
 
@@ -222,17 +222,17 @@ The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** archi
                      v                             v
 +--------------------------+             +--------------------------+
 |       MODEL LAYER        |             |        VIEW LAYER        |
-|  In-Memory Data Models   |             |  JSON API Responses      |
+|  PostgreSQL Database     |             |  JSON API Responses      |
 |  User & Announcement     |             |  Swagger UI & Web Views  |
 +--------------------------+             +--------------------------+
 ```
 
 ### 1. 🗄️ Model Layer
-- **Responsibility:** Represents data models, entity rules, and in-memory persistence operations.
+- **Responsibility:** Encapsulates data access, business entities, validation rules, and persistence operations directly against PostgreSQL.
 - **Implementation in Project:**
-  - **User Model Module (`backend/src/models/userModel.js`):** Database-less in-memory data model encapsulating entity state and full CRUD logic (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`).
-  - **Announcement Model Module (`backend/src/models/announcementModel.js`):** Database-less in-memory announcement model with full CRUD logic (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`).
-  - **Domain Entities:** User and Announcement data models covering **Alumni**, **Students**, and **Academic Staff**.
+  - **User Model Module (`backend/src/models/userModel.js`):** PostgreSQL data model querying the `users` table via `db.query` for full asynchronous CRUD operations (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`), with automatic field mapping.
+  - **Announcement Model Module (`backend/src/models/announcementModel.js`):** PostgreSQL announcement data model querying the `announcements` table joined with `users` for author metadata, providing full asynchronous CRUD operations (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`).
+  - **Domain Entities:** User and Announcement relational models supporting **Alumni**, **Students**, and **Academic Staff**.
 
 ### 2. 👁️ View Layer
 - **Responsibility:** Formats and presents information back to the client or user interface.
@@ -275,9 +275,9 @@ Alumni/
         │   ├── factories/       # Entity factories (User, Department, Profiles, Events, etc.)
         │   │   └── index.js
         │   └── migrations/      # Versioned migration steps (001 to 007 with up/down)
-        ├── models/              # Data model abstractions
-        │   ├── userModel.js     # [Model] Database-less User Model containing CRUD functions
-        │   └── announcementModel.js # [Model] Database-less Announcement Model containing CRUD functions
+        ├── models/              # Data model abstractions (PostgreSQL connected)
+        │   ├── userModel.js     # [Model] PostgreSQL User Model querying users table via db pool
+        │   └── announcementModel.js # [Model] PostgreSQL Announcement Model querying announcements table via db pool
         ├── views/               # Presentation and HTML rendering templates
         │   ├── userViews.js     # [View] User Views module (renderUserListPage, renderUserDetailPage, etc.)
         │   └── announcementViews.js # [View] Announcement Views module (renderAnnouncementListPage, etc.)
@@ -297,8 +297,8 @@ Alumni/
 
 | Path / File | MVC Component | Description & Responsibilities |
 |---|---|---|
-| **`backend/src/models/userModel.js`** | **Model** | Encapsulates in-memory User entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
-| **`backend/src/models/announcementModel.js`** | **Model** | Encapsulates Announcement entity storage and provides CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
+| **`backend/src/models/userModel.js`** | **Model** | Connects to PostgreSQL `users` table via `db.query` pool client and provides asynchronous CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
+| **`backend/src/models/announcementModel.js`** | **Model** | Connects to PostgreSQL `announcements` table via `db.query` pool client and provides asynchronous CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
 | **`backend/src/views/userViews.js`** | **View** | Generates HTML page templates for User Listing (`GET /users`), Details, Edit Form, and CRUD response pages. |
 | **`backend/src/views/announcementViews.js`** | **View** | Generates HTML page templates for Announcement Listing (`GET /announcements`), Details, Edit Form, and CRUD response pages. |
 | **`backend/src/controllers/apiUserController.js`** | **Controller (API)** | REST API Controller handling JSON API requests, status codes, payload validation, and API CRUD operations for Users. |
