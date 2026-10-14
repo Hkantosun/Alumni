@@ -3,9 +3,9 @@
 
 > **Belge Sürümü:** 1.0.0  
 > **Tarih:** 2026-10-14  
-> **Durum:** Tasarım Aşaması (Logical & Relational Schema Design)  
+> **Durum:** Üretildi ve Aktif (Implemented & Live Schema in PostgreSQL 16)  
 > **Hedef RDBMS:** PostgreSQL 16+ (İlişkisel Veritabanı Mimarisi)  
-> *Not: Bu doküman veritabanı şema tasarımını tanımlar; şu an doğrudan fiziksel veritabanı kurulumu yapılmamaktadır.*
+> **Uygulama:** Bu şema `backend/src/db/schema.sql` dosyasında DDL olarak üretilmiş ve `alumni_db` PostgreSQL veritabanında aktif olarak oluşturulmuştur.
 
 ---
 
