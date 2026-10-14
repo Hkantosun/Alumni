@@ -137,7 +137,7 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 - **Docker & Docker Compose** — containerization of services, required for the one-command startup rule
 - **Git & GitHub** — version control and collaboration
 - **Antigravity** — development environment used to build the project
-- **.env files** — used for environment variables (e.g., PORT), excluded from version control via `.gitignore`
+- **.env files** — used for environment variables (e.g., PORT, DATABASE_URL), excluded from version control via `.gitignore`; sample provided in `.example.env`
 
 ---
 
@@ -217,7 +217,7 @@ The project tree structure and the mapping of each directory/file to its corresp
 Alumni/
 ├── ddd.md                       # Database Design Documentation (ER diagram & schemas)
 ├── docker-compose.yml           # [DevOps] Container orchestration for Express API
-├── .env                         # [Config] Server environment configuration (PORT)
+├── .example.env                 # [Config Template] Example environment configuration
 ├── README.md                    # Project documentation & MVC architecture
 ├── implementation_plan.md       # Development roadmap & feature specifications
 ├── LICENSE                      # Open-source license file
@@ -264,7 +264,8 @@ Alumni/
 | **`docker-compose.yml`** | **Infrastructure & Database** | Manages PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
-| **`.env`** | **Configuration** | Stores port, database connection string, and environment configurations. |
+| **`.env`** | **Configuration** | Local environment file (git-ignored) containing database credentials and ports. |
+| **`.example.env`** | **Configuration Template** | Template environment variables file to guide setting up `.env`. |
 | **`ddd.md`** | **Model & Architecture** | Comprehensive Database Design Documentation containing Mermaid ER diagram, table schemas, and data dictionary. |
 
 ---
