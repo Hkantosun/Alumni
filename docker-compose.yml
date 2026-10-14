@@ -13,6 +13,10 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://alumni_user:alumni_pass@db:5432/alumni_db
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
       interval: 10s
@@ -22,8 +26,33 @@ services:
     networks:
       - alumni_network
 
+  # ── Database Service (PostgreSQL 16) ─────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: alumni_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: alumni_user
+      POSTGRES_PASSWORD: alumni_pass
+      POSTGRES_DB: alumni_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alumni_user -d alumni_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - alumni_network
+
 # ── Networks ──────────────────────────────────────────────
 networks:
   alumni_network:
     name: alumni_network
     driver: bridge
+
+# ── Volumes ───────────────────────────────────────────────
+volumes:
+  postgres_data:

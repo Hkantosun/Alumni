@@ -124,9 +124,10 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 - **Framework:** Express.js
 - Handles REST API endpoints, business logic, and communication with the database
 
-### Data Storage
-- **In-Memory Data Store (No Database)**
-- Native JavaScript memory structures for managing models and entities without external database overhead
+### Database
+- **PostgreSQL 16 (Dockerized)**
+- Containerized relational database (`alumni_db` running on port `5433:5432` in Docker Compose)
+- In-memory data model layer currently active; full relational persistence ready via `pg` driver and `ddd.md` schema
 
 ### Frontend
 - **HTML5 & CSS3**
@@ -260,10 +261,10 @@ Alumni/
 | **`backend/src/routes/apiAnnouncementRoutes.js`** | **Router** | Express Router mapping `/api/announcements` REST endpoints directly to `ApiAnnouncementController`. |
 | **`backend/src/routes/announcementRoutes.js`** | **Router** | Express Router mapping `/announcements` page routes directly to `AnnouncementController`. |
 | **`backend/src/index.js`** | **Entry Point** | Initializes Express server, configures Swagger UI OpenAPI specs, and mounts router modules. |
-| **`docker-compose.yml`** | **Infrastructure** | Manages backend container (`alumni_backend`). |
-| **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing and Swagger UI. |
+| **`docker-compose.yml`** | **Infrastructure & Database** | Manages PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
+| **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
-| **`.env`** | **Configuration** | Stores port and environment configurations. |
+| **`.env`** | **Configuration** | Stores port, database connection string, and environment configurations. |
 | **`ddd.md`** | **Model & Architecture** | Comprehensive Database Design Documentation containing Mermaid ER diagram, table schemas, and data dictionary. |
 
 ---
