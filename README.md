@@ -153,7 +153,6 @@ Comprehensive database schema and relational entity specifications are documente
   - `mentorship_requests` (Mentorship connections and statuses)
   - `events` & `event_rsvps` (Alumni/student events and attendance tracking)
   - `announcements` (Departmental and general announcements)
-  - `direct_messages` (Communication between alumni and students)
 - 🔒 **Integrity & Optimization:** Foreign key cascades, check constraints, 3NF normalization, and recommended database indexes.
 
 > *Note:* The application currently utilizes in-memory models (`userModel.js`, `announcementModel.js`). `ddd.md` serves as the logical design blueprint for future database persistence.

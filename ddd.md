@@ -24,7 +24,6 @@
    - [3.9 events (Etkinlikler)](#39-events-etkinlikler)
    - [3.10 event_rsvps (Etkinlik Katılım Durumları)](#310-event_rsvps-etkinlik-katılım-durumları)
    - [3.11 announcements (Duyurular)](#311-announcements-duyurular)
-   - [3.12 direct_messages (Kullanıcılar Arası Mesajlaşma)](#312-direct_messages-kullanıcılar-arası-mesajlaşma)
 4. [İlişki ve Kardinalite Özeti](#4-ilişki-ve-kardinalite-özeti)
 5. [İndeksleme ve Performans Optimizasyonları](#5-indeksleme-ve-performans-optimizasyonları)
 
@@ -66,9 +65,6 @@ erDiagram
     users ||--o{ event_rsvps : "katilir"
 
     users ||--o{ announcements : "yayinlar"
-
-    users ||--o{ direct_messages : "gonderir"
-    users ||--o{ direct_messages : "alir"
 
     departments {
         int id PK
@@ -166,14 +162,6 @@ erDiagram
         text content
         varchar category
         boolean is_pinned
-    }
-
-    direct_messages {
-        int id PK
-        int sender_id FK
-        int receiver_id FK
-        text content
-        boolean is_read
     }
 ```
 
@@ -368,20 +356,6 @@ Sistem genelindeki duyurular (mevcut `AnnouncementModel` ile uyumludur).
 
 ---
 
-### 3.12 `direct_messages` (Kullanıcılar Arası Mesajlaşma)
-Öğrenci-mezun mentörlük veya mezun-mezun iletişimi için mesaj kayıtları.
-
-| Sütun Adı | Veri Tipi | Kısıtlar (Constraints) | Açıklama |
-|---|---|---|---|
-| `id` | `SERIAL` | `PRIMARY KEY` | Mesaj ID |
-| `sender_id` | `INTEGER` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | Gönderen kullanıcı |
-| `receiver_id` | `INTEGER` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | Alıcı kullanıcı |
-| `content` | `TEXT` | `NOT NULL` | Mesaj içeriği |
-| `is_read` | `BOOLEAN` | `NOT NULL`, `DEFAULT FALSE` | Okundu bilgisi |
-| `created_at` | `TIMESTAMP` | `NOT NULL`, `DEFAULT NOW()` | Gönderilme zamanı |
-
----
-
 ## 4. İlişki ve Kardinalite Özeti
 
 | Birincil Tablo | İlişkili Tablo | Kardinalite | Açıklama |
@@ -397,7 +371,6 @@ Sistem genelindeki duyurular (mevcut `AnnouncementModel` ile uyumludur).
 | `users` (öğrenci) | `mentorship_requests`| `1 : N` | Öğrenci birden fazla mentöre talep açabilir. |
 | `alumni_profiles` | `mentorship_requests`| `1 : N` | Bir mentöre birden fazla talep gelebilir. |
 | `events` | `event_rsvps` | `1 : N` | Bir etkinliğe birçok kişi RSVP yapabilir. |
-| `users` | `direct_messages` | `1 : N` | Bir kullanıcı birçok mesaj gönderebilir/alabilir. |
 
 ---
 
@@ -410,9 +383,6 @@ Arama ve filtreleme işlemlerinde yüksek performans için aşağıdaki indeksle
    - `idx_alumni_dept_year`: `alumni_profiles(department_id, graduation_year)`
    - `idx_alumni_mentorship`: `alumni_profiles(available_for_mentorship) WHERE available_for_mentorship = TRUE`
    - `idx_job_postings_active`: `job_postings(is_active, created_at DESC)`
-2. **Mesajlaşma ve Bildirim İndeksleri:**
-   - `idx_messages_conversation`: `direct_messages(sender_id, receiver_id, created_at DESC)`
-   - `idx_messages_unread`: `direct_messages(receiver_id) WHERE is_read = FALSE`
-3. **Etkinlik & Katılım:**
+2. **Etkinlik & Katılım İndeksleri:**
    - `idx_events_date`: `events(event_date)`
    - `idx_event_rsvps_unique`: `UNIQUE (event_id, user_id)`
