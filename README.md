@@ -11,6 +11,7 @@
 - [API Documentation & Swagger UI](#-api-documentation--swagger-ui)
 - [Tech Stack](#-tech-stack)
 - [Database Design Documentation (ddd.md)](#-database-design-documentation-dddmd)
+- [Database Migrations, Factories & Seeds](#-database-migrations-factories--seeds)
 - [MVC Architecture](#-mvc-architecture)
 - [Core Requirements](#-core-requirements-defined-by-the-instructor)
 - [Additional Features](#-additional-features-developer-choice)
@@ -160,6 +161,46 @@ Comprehensive database schema and relational entity specifications are documente
 
 ---
 
+## 🔄 Database Migrations, Factories & Seeds
+
+The project includes an enterprise-grade database migration and seeding workflow configured for PostgreSQL 16:
+
+### 1. ⚡ Migrations (`backend/src/db/migrations/`)
+Seven versioned migrations manage schema evolution idempotently with transactional `up` and `down` rollback capabilities:
+- `001_create_departments.js`: Academic departments table
+- `002_create_users.js`: Core users authentication & roles table
+- `003_create_profile_extensions.js`: 1:1 profile extensions (`alumni_profiles`, `student_profiles`, `academic_profiles`)
+- `004_create_careers.js`: `job_experiences` and `job_postings`
+- `005_create_mentorship_requests.js`: Student-alumni mentorship connections
+- `006_create_events_and_announcements.js`: Events, RSVPs, and system announcements
+- `007_create_indexes.js`: Performance optimization indexes
+
+### 2. 🏭 Factories (`backend/src/db/factories/index.js`)
+Programmatic model factories generate realistic, domain-specific mock entities (Turkish names, university departments, tech companies, job titles, dates).
+
+### 3. 🌱 Seeders (`backend/src/db/seed.js`)
+Populates the database with consistent test data (5 departments, 21 users across all 4 roles, profiles, work histories, job postings, mentorship requests, events with RSVPs, announcements).
+
+### 🛠️ Migration & Seeding CLI Commands:
+```bash
+# Apply all pending database migrations
+docker exec -it alumni_backend npm run migrate
+
+# Rollback the most recently applied migration
+docker exec -it alumni_backend npm run migrate:rollback
+
+# Populate database with factory seed data
+docker exec -it alumni_backend npm run db:seed
+
+# Wipe existing records and cleanly seed all tables
+docker exec -it alumni_backend npm run db:seed:clean
+
+# Run complete database setup (migrate + clean seed)
+docker exec -it alumni_backend npm run db:setup
+```
+
+---
+
 ## 🏛 MVC Architecture
 
 The **Alumni Tracking System** follows the **Model-View-Controller (MVC)** architectural pattern to separate data persistence, presentation logic, and request routing/business rules.
@@ -226,6 +267,14 @@ Alumni/
     ├── package.json             # Node.js dependencies & scripts (express, swagger-ui-express, cors)
     └── src/                     # Application source code
         ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI & mounts routes
+        ├── db/                  # Database infrastructure (Migrations, Factories, Seeds)
+        │   ├── db.js            # PostgreSQL pool client module
+        │   ├── migrate.js       # Transactional migration runner with rollback capability
+        │   ├── schema.sql       # Pure PostgreSQL DDL generated from ddd.md
+        │   ├── seed.js          # Factory-driven database seeder
+        │   ├── factories/       # Entity factories (User, Department, Profiles, Events, etc.)
+        │   │   └── index.js
+        │   └── migrations/      # Versioned migration steps (001 to 007 with up/down)
         ├── models/              # Data model abstractions
         │   ├── userModel.js     # [Model] Database-less User Model containing CRUD functions
         │   └── announcementModel.js # [Model] Database-less Announcement Model containing CRUD functions
@@ -264,6 +313,9 @@ Alumni/
 | **`docker-compose.yml`** | **Infrastructure & Database** | Manages PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |
 | **`backend/Dockerfile`** | **Infrastructure** | Containerizes the Express controller and API server environment. |
+| **`backend/src/db/migrate.js`** | **Database Migration Runner** | Executes and rolls back versioned SQL migrations (`001` to `007`). |
+| **`backend/src/db/factories/`** | **Test Data Factories** | Entity mock factories producing consistent domain data for all models. |
+| **`backend/src/db/seed.js`** | **Database Seeder** | Populates database with structured test records (departments, users, profiles, jobs, events). |
 | **`.env`** | **Configuration** | Local environment file (git-ignored) containing database credentials and ports. |
 | **`.example.env`** | **Configuration Template** | Template environment variables file to guide setting up `.env`. |
 | **`ddd.md`** | **Model & Architecture** | Comprehensive Database Design Documentation containing Mermaid ER diagram, table schemas, and data dictionary. |
