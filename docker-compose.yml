@@ -1,10 +1,29 @@
 services:
-  # ── Backend ─────────────────────────────────────────────
+  # ── Backend Service ─────────────────────────────────────
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: alumni_backend
-    restart: always
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       - PORT=3000
+      - NODE_ENV=development
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - alumni_network
+
+# ── Networks ──────────────────────────────────────────────
+networks:
+  alumni_network:
+    name: alumni_network
+    driver: bridge
