@@ -111,6 +111,23 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 | **PUT** | `/api/users/:id` | Full update user data by ID |
 | **PATCH** | `/api/users/:id` | Partial update user data by ID |
 | **DELETE** | `/api/users/:id` | Delete specific user by ID |
+| **GET** | `/api/departments` | List all departments (Direct REST Route) |
+| **POST** | `/api/departments` | Create new department (Direct REST Route) |
+| **GET** | `/api/departments/:id` | Get department details by ID (Direct REST Route) |
+| **GET** | `/api/departments/:departmentId/job-postings` | List jobs belonging to a department (**Nested REST Route**) |
+| **POST** | `/api/departments/:departmentId/job-postings` | Create job under a department (**Nested REST Route**) |
+| **GET** | `/api/users/:userId/job-postings` | List jobs posted by a specific user (**Nested REST Route**) |
+| **POST** | `/api/users/:userId/job-postings` | Create job authored by a user (**Nested REST Route**) |
+| **GET** | `/api/job-postings` | List all job & internship postings (Direct REST Route) |
+| **POST** | `/api/job-postings` | Create job posting (Direct REST Route) |
+| **GET** | `/api/job-postings/:id` | Get job posting by ID (Direct REST Route) |
+| **PUT** | `/api/job-postings/:id` | Full update job posting (Direct REST Route) |
+| **DELETE** | `/api/job-postings/:id` | Delete job posting (Direct REST Route) |
+| **GET** | `/api/announcements` | List announcements (Direct REST Route) |
+| **GET** | `/departments` | Departments web listing (Direct Web Page) |
+| **GET** | `/departments/:departmentId/job-postings` | Jobs for department (**Nested Web Page**) |
+| **GET** | `/job-postings` | Job postings web listing (Direct Web Page) |
+| **GET** | `/users/:userId/job-postings` | Jobs by user (**Nested Web Page**) |
 | **GET** | `/Hello` | Hello World greeting |
 | **GET** | `/Hello/:name` | Personalized greeting |
 | **GET** | `/sum/:number1/:number2` | Sum two numbers |
@@ -276,21 +293,33 @@ Alumni/
         │   │   └── index.js
         │   └── migrations/      # Versioned migration steps (001 to 007 with up/down)
         ├── models/              # Data model abstractions (PostgreSQL connected)
-        │   ├── userModel.js     # [Model] PostgreSQL User Model querying users table via db pool
-        │   └── announcementModel.js # [Model] PostgreSQL Announcement Model querying announcements table via db pool
+        │   ├── userModel.js         # [Model] PostgreSQL User Model querying users table via db pool
+        │   ├── announcementModel.js # [Model] PostgreSQL Announcement Model querying announcements table via db pool
+        │   ├── departmentModel.js   # [Model] PostgreSQL Department Model
+        │   └── jobPostingModel.js   # [Model] PostgreSQL Job Posting Model (direct + nested relationship queries)
         ├── views/               # Presentation and HTML rendering templates
-        │   ├── userViews.js     # [View] User Views module (renderUserListPage, renderUserDetailPage, etc.)
-        │   └── announcementViews.js # [View] Announcement Views module (renderAnnouncementListPage, etc.)
+        │   ├── userViews.js         # [View] User Views module (renderUserListPage, etc.)
+        │   ├── announcementViews.js # [View] Announcement Views module (renderAnnouncementListPage, etc.)
+        │   ├── departmentViews.js   # [View] Department Views module (renderDepartmentListPage, etc.)
+        │   └── jobPostingViews.js   # [View] Job Posting Views module (direct & nested views)
         ├── controllers/         # Request handling and controller logic
         │   ├── apiUserController.js          # [Controller] REST API Controller for /api/users
         │   ├── userController.js             # [Controller] Web Controller for /users HTML pages
         │   ├── apiAnnouncementController.js  # [Controller] REST API Controller for /api/announcements
-        │   └── announcementController.js     # [Controller] Web Controller for /announcements HTML pages
+        │   ├── announcementController.js     # [Controller] Web Controller for /announcements HTML pages
+        │   ├── apiDepartmentController.js    # [Controller] REST API Controller for /api/departments (direct & nested)
+        │   ├── departmentController.js       # [Controller] Web Controller for /departments HTML pages (direct & nested)
+        │   ├── apiJobPostingController.js    # [Controller] REST API Controller for /api/job-postings (direct & nested)
+        │   └── jobPostingController.js       # [Controller] Web Controller for /job-postings HTML pages (direct & nested)
         └── routes/              # Express Router definitions
             ├── apiUserRoutes.js         # [Router] Express Router for /api/users endpoints
             ├── userRoutes.js            # [Router] Express Router for /users, /home, /about web routes
             ├── apiAnnouncementRoutes.js # [Router] Express Router for /api/announcements endpoints
-            └── announcementRoutes.js    # [Router] Express Router for /announcements web routes
+            ├── announcementRoutes.js    # [Router] Express Router for /announcements web routes
+            ├── apiDepartmentRoutes.js   # [Router] Express Router for /api/departments endpoints
+            ├── departmentRoutes.js      # [Router] Express Router for /departments web routes
+            ├── apiJobPostingRoutes.js   # [Router] Express Router for /api/job-postings (mergeParams: true)
+            └── jobPostingRoutes.js      # [Router] Express Router for /job-postings (mergeParams: true)
 ```
 
 #### 📌 File-to-Layer Mapping Table:
@@ -309,6 +338,10 @@ Alumni/
 | **`backend/src/routes/userRoutes.js`** | **Router** | Express Router mapping `/users`, `/home`, `/about` page routes directly to `UserController`. |
 | **`backend/src/routes/apiAnnouncementRoutes.js`** | **Router** | Express Router mapping `/api/announcements` REST endpoints directly to `ApiAnnouncementController`. |
 | **`backend/src/routes/announcementRoutes.js`** | **Router** | Express Router mapping `/announcements` page routes directly to `AnnouncementController`. |
+| **`backend/src/routes/apiDepartmentRoutes.js`** | **Router** | Express Router mapping direct `/api/departments` and nested `/api/departments/:departmentId/job-postings` endpoints. |
+| **`backend/src/routes/departmentRoutes.js`** | **Router** | Express Router mapping direct `/departments` and nested `/departments/:departmentId/job-postings` web routes. |
+| **`backend/src/routes/apiJobPostingRoutes.js`** | **Router** | Express Router (`mergeParams: true`) mapping direct `/api/job-postings` and nested `/api/departments/:departmentId/job-postings`, `/api/users/:userId/job-postings`. |
+| **`backend/src/routes/jobPostingRoutes.js`** | **Router** | Express Router (`mergeParams: true`) mapping direct `/job-postings` and nested web routes. |
 | **`backend/src/index.js`** | **Entry Point** | Initializes Express server, configures Swagger UI OpenAPI specs, and mounts router modules. |
 | **`docker-compose.yml`** | **Infrastructure & Database** | Manages PostgreSQL database container (`alumni_db`) and backend container (`alumni_backend`). |
 | **`backend/package.json`** | **Infrastructure & Dependencies** | Configures dependencies for Express routing, PostgreSQL client (`pg`), and Swagger UI. |

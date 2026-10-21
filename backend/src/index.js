@@ -9,6 +9,10 @@ const apiUserRoutes = require('./routes/apiUserRoutes');
 const userRoutes = require('./routes/userRoutes');
 const apiAnnouncementRoutes = require('./routes/apiAnnouncementRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
+const apiDepartmentRoutes = require('./routes/apiDepartmentRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
+const apiJobPostingRoutes = require('./routes/apiJobPostingRoutes');
+const jobPostingRoutes = require('./routes/jobPostingRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -315,6 +319,135 @@ const swaggerDefinition = {
         ],
         responses: { 200: { description: 'Toplama sonucu' } }
       }
+    },
+    '/api/departments': {
+      get: {
+        summary: 'Tüm Bölümleri Listele (Direct API Route)',
+        tags: ['API Departments'],
+        responses: { 200: { description: 'Bölümler listesi ve ilişkili ilan sayıları' } }
+      },
+      post: {
+        summary: 'Yeni Bölüm Ekle (Direct API Route)',
+        tags: ['API Departments'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { code: 'SE', name: 'Yazılım Mühendisliği', faculty: 'Mühendislik Fakültesi' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'Bölüm oluşturuldu' } }
+      }
+    },
+    '/api/departments/{id}': {
+      get: {
+        summary: 'Bölüm Detayı Getir (Direct API Route)',
+        tags: ['API Departments'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Bölüm detayı' }, 404: { description: 'Bulunamadı' } }
+      }
+    },
+    '/api/departments/{departmentId}/job-postings': {
+      get: {
+        summary: 'Bölüme Ait İlanları Listele (Nested API Route: Department -> Jobs)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'departmentId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Bölüme hedeflenmiş ilanlar' } }
+      },
+      post: {
+        summary: 'Bölüm Altında Yeni İlan Yayınla (Nested API Route)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'departmentId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { posted_by_user_id: 1, title: 'Yazılım Stajyeri', company: 'Google', job_type: 'Internship', description: 'Stajyer ilanı' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'İlan oluşturuldu' } }
+      }
+    },
+    '/api/users/{userId}/job-postings': {
+      get: {
+        summary: 'Kullanıcının Yayınladığı İlanları Listele (Nested API Route: User -> Jobs)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Kullanıcıya ait iş ilanları' } }
+      },
+      post: {
+        summary: 'Kullanıcı Adına Yeni İlan Yayınla (Nested API Route)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { title: 'Backend Geliştirici', company: 'Amazon', job_type: 'Full-time', description: 'Açıklama' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'İlan oluşturuldu' } }
+      }
+    },
+    '/api/job-postings': {
+      get: {
+        summary: 'Tüm İlanları Listele (Direct API Route)',
+        tags: ['API Job Postings'],
+        parameters: [
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'order', in: 'query', schema: { type: 'string', enum: ['asc', 'desc'] } },
+          { name: 'jobType', in: 'query', schema: { type: 'string' } }
+        ],
+        responses: { 200: { description: 'İlanlar listesi' } }
+      },
+      post: {
+        summary: 'Yeni İlan Oluştur (Direct API Route)',
+        tags: ['API Job Postings'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { posted_by_user_id: 1, department_id: 1, title: 'Full Stack Dev', company: 'Acme', job_type: 'Full-time', description: 'İlan metni' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'İlan oluşturuldu' } }
+      }
+    },
+    '/api/job-postings/{id}': {
+      get: {
+        summary: 'ID ile Tek İlan Getir (Direct API Route)',
+        tags: ['API Job Postings'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'İlan detayı' }, 404: { description: 'Bulunamadı' } }
+      },
+      put: {
+        summary: 'İlanı Tamamen Güncelle (Direct API Route)',
+        tags: ['API Job Postings'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'İlan güncellendi' } }
+      },
+      delete: {
+        summary: 'İlanı Sil (Direct API Route)',
+        tags: ['API Job Postings'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'İlan silindi' } }
+      }
     }
   }
 };
@@ -365,10 +498,23 @@ app.get('/sum/:number1/:number2', (req, res) => {
 });
 
 // Router Mounting
+// 1. Direct REST API Routes
 app.use('/api/users', apiUserRoutes);
 app.use('/api/announcements', apiAnnouncementRoutes);
+app.use('/api/departments', apiDepartmentRoutes);
+app.use('/api/job-postings', apiJobPostingRoutes);
+
+// 2. Nested REST API Routes (Child Resources with mergeParams)
+app.use('/api/departments/:departmentId/job-postings', apiJobPostingRoutes);
+app.use('/api/users/:userId/job-postings', apiJobPostingRoutes);
+
+// 3. Web Views & HTML Actions (Direct & Nested)
+app.use('/job-postings', jobPostingRoutes);
+app.use('/departments/:departmentId/job-postings', jobPostingRoutes);
+app.use('/users/:userId/job-postings', jobPostingRoutes);
 app.use('/', userRoutes);
 app.use('/', announcementRoutes);
+app.use('/', departmentRoutes);
 
 // Sunucuyu başlat
 app.listen(PORT, () => {
