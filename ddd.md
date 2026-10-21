@@ -24,6 +24,7 @@
    - [3.9 events (Etkinlikler)](#39-events-etkinlikler)
    - [3.10 event_rsvps (Etkinlik Katılım Durumları)](#310-event_rsvps-etkinlik-katılım-durumları)
    - [3.11 announcements (Duyurular)](#311-announcements-duyurular)
+   - [3.12 applications (İş ve Staj Başvuruları)](#312-applications-iş-ve-staj-başvuruları)
 4. [İlişki ve Kardinalite Özeti](#4-ilişki-ve-kardinalite-özeti)
 5. [İndeksleme ve Performans Optimizasyonları](#5-indeksleme-ve-performans-optimizasyonları)
 
@@ -66,6 +67,8 @@ erDiagram
     users ||--o{ event_rsvps : "katilir"
 
     users ||--o{ announcements : "yayinlar"
+    job_postings ||--o{ applications : "basvurulari_icerir"
+    users ||--o{ applications : "basvurur"
 
     departments {
         int id PK
@@ -164,6 +167,16 @@ erDiagram
         text content
         varchar category
         boolean is_pinned
+    }
+
+    applications {
+        int id PK
+        int job_posting_id FK
+        int applicant_user_id FK
+        varchar status
+        varchar resume_url
+        text cover_letter
+        timestamp created_at
     }
 ```
 
@@ -359,6 +372,24 @@ Sistem genelindeki duyurular (mevcut `AnnouncementModel` ile uyumludur).
 
 ---
 
+### 3.12 `applications` (İş ve Staj Başvuruları)
+Öğrenci veya mezunların sistemdeki iş/staj ilanlarına yaptıkları başvuruları saklar.
+
+| Sütun Adı | Veri Tipi | Kısıtlar (Constraints) | Açıklama |
+|---|---|---|---|
+| `id` | `SERIAL` | `PRIMARY KEY` | Başvuru ID |
+| `job_posting_id` | `INTEGER` | `NOT NULL`, `REFERENCES job_postings(id) ON DELETE CASCADE` | Başvurulan iş ilanı |
+| `applicant_user_id`| `INTEGER` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | Başvuruda bulunan öğrenci/mezun |
+| `resume_url` | `VARCHAR(500)` | `NULL` | Özgeçmiş / CV bağlantı linki |
+| `cover_letter` | `TEXT` | `NULL` | Ön yazı / niyet mektubu |
+| `status` | `VARCHAR(30)` | `NOT NULL`, `DEFAULT 'pending'`, `CHECK (status IN ('pending', 'under_review', 'accepted', 'rejected', 'withdrawn'))` | Başvuru durumu |
+| `created_at` | `TIMESTAMP` | `NOT NULL`, `DEFAULT NOW()` | Başvuru tarihi |
+| `updated_at` | `TIMESTAMP` | `NOT NULL`, `DEFAULT NOW()` | Son güncelleme zamanı |
+
+> *Not:* `(job_posting_id, applicant_user_id)` üzerinde birleşik benzersiz kısıtlama (`UNIQUE`) tanımlanır; bir aday aynı ilana birden fazla aktif başvuru yapamaz.
+
+---
+
 ## 4. İlişki ve Kardinalite Özeti
 
 | Birincil Tablo | İlişkili Tablo | Kardinalite | Açıklama |
@@ -375,6 +406,8 @@ Sistem genelindeki duyurular (mevcut `AnnouncementModel` ile uyumludur).
 | `users` (öğrenci) | `mentorship_requests`| `1 : N` | Öğrenci birden fazla mentöre talep açabilir. |
 | `alumni_profiles` | `mentorship_requests`| `1 : N` | Bir mentöre birden fazla talep gelebilir. |
 | `events` | `event_rsvps` | `1 : N` | Bir etkinliğe birçok kişi RSVP yapabilir. |
+| `job_postings` | `applications` | `1 : N` | Bir ilana birçok kullanıcı başvurabilir. |
+| `users` | `applications` | `1 : N` | Bir kullanıcı birden fazla ilana başvurabilir. |
 
 ---
 
@@ -388,6 +421,9 @@ Arama ve filtreleme işlemlerinde yüksek performans için aşağıdaki indeksle
    - `idx_alumni_mentorship`: `alumni_profiles(available_for_mentorship) WHERE available_for_mentorship = TRUE`
    - `idx_job_postings_dept`: `job_postings(department_id)`
    - `idx_job_postings_active`: `job_postings(is_active, created_at DESC)`
+   - `idx_applications_job`: `applications(job_posting_id)`
+   - `idx_applications_applicant`: `applications(applicant_user_id)`
+   - `idx_applications_unique`: `UNIQUE (job_posting_id, applicant_user_id)`
 2. **Etkinlik & Katılım İndeksleri:**
    - `idx_events_date`: `events(event_date)`
    - `idx_event_rsvps_unique`: `UNIQUE (event_id, user_id)`
