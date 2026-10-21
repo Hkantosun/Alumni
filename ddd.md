@@ -1,8 +1,8 @@
 # 🗄️ Database Design Documentation (DDD)
 ## Alumni Tracking System
 
-> **Belge Sürümü:** 1.0.0  
-> **Tarih:** 2026-10-14  
+> **Belge Sürümü:** 1.1.0  
+> **Tarih:** 2026-10-21  
 > **Durum:** Üretildi ve Aktif (Implemented & Live Schema in PostgreSQL 16)  
 > **Hedef RDBMS:** PostgreSQL 16+ (İlişkisel Veritabanı Mimarisi)  
 > **Uygulama:** Bu şema `backend/src/db/schema.sql` dosyasında DDL olarak üretilmiş ve `alumni_db` PostgreSQL veritabanında aktif olarak oluşturulmuştur.
@@ -49,6 +49,7 @@ erDiagram
     departments ||--o{ alumni_profiles : "mezun_olunan"
     departments ||--o{ student_profiles : "okunan"
     departments ||--o{ academic_profiles : "gorev_yapilan"
+    departments ||--o{ job_postings : "hedef_bolum"
 
     users ||--o| alumni_profiles : "genisletir (1:1)"
     users ||--o| student_profiles : "genisletir (1:1)"
@@ -124,6 +125,7 @@ erDiagram
     job_postings {
         int id PK
         int posted_by_user_id FK
+        int department_id FK
         varchar title
         varchar company
         varchar job_type
@@ -280,6 +282,7 @@ Mezunlar veya akademisyenler tarafından paylaşılan iş/staj fırsatları.
 |---|---|---|---|
 | `id` | `SERIAL` | `PRIMARY KEY` | İlan ID |
 | `posted_by_user_id`| `INTEGER` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | İlanı yayınlayan kullanıcı |
+| `department_id` | `INTEGER` | `NULL`, `REFERENCES departments(id) ON DELETE SET NULL` | İlgili akademik bölüm (bölüm bazlı filtreleme için; genel ilanlar için NULL) |
 | `title` | `VARCHAR(200)` | `NOT NULL` | İlan başlığı |
 | `company` | `VARCHAR(150)` | `NOT NULL` | Şirket / Kurum |
 | `location` | `VARCHAR(100)` | `NOT NULL` | Konum (Şehir / Remote) |
@@ -363,6 +366,7 @@ Sistem genelindeki duyurular (mevcut `AnnouncementModel` ile uyumludur).
 | `departments` | `alumni_profiles` | `1 : N` | Bir bölümden birçok mezun çıkar. |
 | `departments` | `student_profiles` | `1 : N` | Bir bölümde birçok öğrenci okur. |
 | `departments` | `academic_profiles`| `1 : N` | Bir bölümde birçok akademisyen görev alır. |
+| `departments` | `job_postings` | `1 : N` | Bir bölüme özel birçok iş/staj ilanı açılabilir (opsiyonel). |
 | `users` | `alumni_profiles` | `1 : 1` | Bir kullanıcı en fazla bir mezun profiline sahiptir. |
 | `users` | `student_profiles` | `1 : 1` | Bir kullanıcı en fazla bir öğrenci profiline sahiptir. |
 | `users` | `academic_profiles`| `1 : 1` | Bir kullanıcı en fazla bir akademik profile sahiptir. |
@@ -382,6 +386,7 @@ Arama ve filtreleme işlemlerinde yüksek performans için aşağıdaki indeksle
    - `idx_users_role`: `users(role)`
    - `idx_alumni_dept_year`: `alumni_profiles(department_id, graduation_year)`
    - `idx_alumni_mentorship`: `alumni_profiles(available_for_mentorship) WHERE available_for_mentorship = TRUE`
+   - `idx_job_postings_dept`: `job_postings(department_id)`
    - `idx_job_postings_active`: `job_postings(is_active, created_at DESC)`
 2. **Etkinlik & Katılım İndeksleri:**
    - `idx_events_date`: `events(event_date)`
