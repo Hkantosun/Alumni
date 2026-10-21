@@ -151,13 +151,14 @@ function jobExperienceFactory(alumniProfileId, overrides = {}) {
 }
 
 // 7. Job Posting Factory
-function jobPostingFactory(postedByUserId, overrides = {}) {
+function jobPostingFactory(postedByUserId, departmentId = null, overrides = {}) {
   const types = ['Full-time', 'Part-time', 'Internship', 'Remote', 'Contract'];
   const title = getRandomItem(JOB_TITLES);
   const company = getRandomItem(COMPANIES);
 
   return {
     posted_by_user_id: postedByUserId,
+    department_id: departmentId,
     title: `${title} İlanı`,
     company: company,
     location: getRandomItem(CITIES),
@@ -227,6 +228,19 @@ function announcementFactory(authorId, overrides = {}) {
   };
 }
 
+// 12. Application Factory
+function applicationFactory(jobPostingId, applicantUserId, overrides = {}) {
+  const statuses = ['pending', 'under_review', 'accepted', 'rejected'];
+  return {
+    job_posting_id: jobPostingId,
+    applicant_user_id: applicantUserId,
+    resume_url: `https://alumni.edu/cv/applicant_${applicantUserId}.pdf`,
+    cover_letter: 'Pozisyon gereksinimlerini dikkatle inceledim. Üniversitemiz bünyesinde aldığım eğitim ve geliştirdiğim projelerle ekibinize değer katabileceğime inanıyorum.',
+    status: overrides.status || getRandomItem(statuses),
+    ...overrides
+  };
+}
+
 module.exports = {
   departmentFactory,
   userFactory,
@@ -235,6 +249,7 @@ module.exports = {
   academicProfileFactory,
   jobExperienceFactory,
   jobPostingFactory,
+  applicationFactory,
   mentorshipRequestFactory,
   eventFactory,
   eventRsvpFactory,

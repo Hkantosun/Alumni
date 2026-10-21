@@ -7,6 +7,7 @@ const {
   academicProfileFactory,
   jobExperienceFactory,
   jobPostingFactory,
+  applicationFactory,
   mentorshipRequestFactory,
   eventFactory,
   eventRsvpFactory,
@@ -24,6 +25,7 @@ async function seedDatabase({ clean = false } = {}) {
       console.log('🧹 Cleaning existing tables (TRUNCATE CASCADE)...');
       await client.query(`
         TRUNCATE TABLE 
+          applications,
           event_rsvps,
           events,
           announcements,
@@ -164,16 +166,60 @@ async function seedDatabase({ clean = false } = {}) {
     }
     console.log(`✅ Seeded ${studentUserIds.length} students with student profiles.`);
 
-    // 6. Seed Job Postings
-    for (let i = 0; i < 6; i++) {
+    // 6. Seed Job Postings (with department_id assignments)
+    const jobPostingIds = [];
+    const jobTemplates = [
+      { title: 'Kıdemli Backend Geliştirici (Node.js & Go)', company: 'Trendyol Tech', location: 'İstanbul', job_type: 'Full-time', deptIdx: 0 },
+      { title: 'Yapay Zekâ ve Bilgisayarlı Görü Araştırmacısı', company: 'TÜBİTAK BİLGEM', location: 'Kocaeli (Gebze)', job_type: 'Full-time', deptIdx: 0 },
+      { title: 'Yazılım Mühendisliği Yaz Stajyeri', company: 'Google Türkiye', location: 'İstanbul / Hibrit', job_type: 'Internship', deptIdx: 0 },
+      { title: 'Gömülü Yazılım ve İHA Aviyonik Mühendisi', company: 'Baykar Savunma', location: 'İstanbul', job_type: 'Full-time', deptIdx: 1 },
+      { title: 'Donanım Tasarım ve Güç Elektroniği Mühendisi', company: 'Aselsan', location: 'Ankara', job_type: 'Full-time', deptIdx: 1 },
+      { title: 'Tedarik Zinciri ve Lojistik Optimizasyon Uzmanı', company: 'Hepsiburada', location: 'İstanbul', job_type: 'Full-time', deptIdx: 2 },
+      { title: 'Üretim Planlama ve Kalite Stajyeri', company: 'Arçelik Global', location: 'Eskişehir', job_type: 'Internship', deptIdx: 2 },
+      { title: 'Mekatronik ve Robotik Sistemler Mühendisi', company: 'TOGG', location: 'Bursa (Gemlik)', job_type: 'Full-time', deptIdx: 3 },
+      { title: 'Finansal Analist ve Yatırım Danışmanı', company: 'İş Portföy Yönetimi', location: 'İstanbul', job_type: 'Full-time', deptIdx: 4 },
+      { title: 'Ürün Yöneticisi (Product Manager)', company: 'Getir Tech', location: 'Remote', job_type: 'Remote', deptIdx: null },
+      { title: 'Küresel Pazarlama ve Büyüme Uzmanı', company: 'Peak Games', location: 'İstanbul', job_type: 'Full-time', deptIdx: null },
+      { title: 'Genel Yetenek Yeni Mezun Programı 2026', company: 'Turkcell', location: 'İstanbul / Hibrit', job_type: 'Full-time', deptIdx: null }
+    ];
+
+    for (let i = 0; i < jobTemplates.length; i++) {
+      const tmpl = jobTemplates[i];
       const posterId = alumniUserIds[i % alumniUserIds.length] || adminId;
-      const job = jobPostingFactory(posterId);
-      await client.query(`
-        INSERT INTO job_postings (posted_by_user_id, title, company, location, job_type, description, application_link, is_active, expires_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-      `, [job.posted_by_user_id, job.title, job.company, job.location, job.job_type, job.description, job.application_link, job.is_active, job.expires_at]);
+      const deptId = tmpl.deptIdx !== null && departmentIds[tmpl.deptIdx] ? departmentIds[tmpl.deptIdx] : null;
+
+      const job = jobPostingFactory(posterId, deptId, {
+        title: tmpl.title,
+        company: tmpl.company,
+        location: tmpl.location,
+        job_type: tmpl.job_type,
+        description: `${tmpl.company} ekibimizde ${tmpl.title} pozisyonunda görev alacak, takım çalışmasına yatkın ve yenilikçi teknolojiler geliştirecek çalışma arkadaşları arıyoruz.`
+      });
+
+      const { rows } = await client.query(`
+        INSERT INTO job_postings (posted_by_user_id, department_id, title, company, location, job_type, description, application_link, is_active, expires_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING id;
+      `, [job.posted_by_user_id, job.department_id, job.title, job.company, job.location, job.job_type, job.description, job.application_link, job.is_active, job.expires_at]);
+
+      jobPostingIds.push(rows[0].id);
     }
-    console.log(`✅ Seeded 6 job postings.`);
+    console.log(`✅ Seeded ${jobPostingIds.length} job postings across departments.`);
+
+    // 6.1 Seed Applications (Applications submitted by students to job postings)
+    let seededApps = 0;
+    for (let i = 0; i < studentUserIds.length; i++) {
+      const sId = studentUserIds[i];
+      const jId = jobPostingIds[i % jobPostingIds.length];
+      const app = applicationFactory(jId, sId);
+      await client.query(`
+        INSERT INTO applications (job_posting_id, applicant_user_id, resume_url, cover_letter, status)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (job_posting_id, applicant_user_id) DO NOTHING;
+      `, [app.job_posting_id, app.applicant_user_id, app.resume_url, app.cover_letter, app.status]);
+      seededApps++;
+    }
+    console.log(`✅ Seeded ${seededApps} job applications.`);
 
     // 7. Seed Mentorship Requests
     for (let i = 0; i < 5; i++) {
