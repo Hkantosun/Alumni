@@ -9,12 +9,14 @@ module.exports = {
       CREATE INDEX IF NOT EXISTS idx_alumni_dept_year ON alumni_profiles(department_id, graduation_year);
       CREATE INDEX IF NOT EXISTS idx_alumni_mentorship ON alumni_profiles(available_for_mentorship) WHERE available_for_mentorship = TRUE;
       CREATE INDEX IF NOT EXISTS idx_job_postings_active ON job_postings(is_active, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_job_postings_dept ON job_postings(department_id);
       CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);
     `);
   },
   async down(client) {
     await client.query(`
       DROP INDEX IF EXISTS idx_events_date;
+      DROP INDEX IF EXISTS idx_job_postings_dept;
       DROP INDEX IF EXISTS idx_job_postings_active;
       DROP INDEX IF EXISTS idx_alumni_mentorship;
       DROP INDEX IF EXISTS idx_alumni_dept_year;

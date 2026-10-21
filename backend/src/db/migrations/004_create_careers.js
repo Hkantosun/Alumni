@@ -17,10 +17,11 @@ module.exports = {
         description TEXT
       );
 
-      -- Job Postings (Shared by alumni/faculty)
+      -- Job Postings (Shared by alumni/faculty - 1:N with users, 1:N with departments)
       CREATE TABLE IF NOT EXISTS job_postings (
         id SERIAL PRIMARY KEY,
         posted_by_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
         title VARCHAR(200) NOT NULL,
         company VARCHAR(150) NOT NULL,
         location VARCHAR(100) NOT NULL,

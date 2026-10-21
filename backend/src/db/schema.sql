@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS job_experiences (
 CREATE TABLE IF NOT EXISTS job_postings (
     id SERIAL PRIMARY KEY,
     posted_by_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
     title VARCHAR(200) NOT NULL,
     company VARCHAR(150) NOT NULL,
     location VARCHAR(100) NOT NULL,
@@ -152,6 +153,7 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_alumni_dept_year ON alumni_profiles(department_id, graduation_year);
 CREATE INDEX IF NOT EXISTS idx_alumni_mentorship ON alumni_profiles(available_for_mentorship) WHERE available_for_mentorship = TRUE;
 CREATE INDEX IF NOT EXISTS idx_job_postings_active ON job_postings(is_active, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_job_postings_dept ON job_postings(department_id);
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);
 
 -- =============================================================================
