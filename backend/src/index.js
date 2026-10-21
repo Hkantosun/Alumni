@@ -13,6 +13,8 @@ const apiDepartmentRoutes = require('./routes/apiDepartmentRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const apiJobPostingRoutes = require('./routes/apiJobPostingRoutes');
 const jobPostingRoutes = require('./routes/jobPostingRoutes');
+const apiApplicationRoutes = require('./routes/apiApplicationRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -448,6 +450,102 @@ const swaggerDefinition = {
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: { 200: { description: 'İlan silindi' } }
       }
+    },
+    '/api/applications': {
+      get: {
+        summary: 'Tüm Başvuruları Listele (Direct API Route)',
+        tags: ['API Applications'],
+        parameters: [
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['pending', 'under_review', 'accepted', 'rejected', 'withdrawn'] } }
+        ],
+        responses: { 200: { description: 'Başvurular listesi' } }
+      },
+      post: {
+        summary: 'Yeni Başvuru Gönder (Direct API Route)',
+        tags: ['API Applications'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { job_posting_id: 1, applicant_user_id: 12, resume_url: 'https://cv.link', cover_letter: 'Niyet mektubu' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'Başvuru kaydedildi' } }
+      }
+    },
+    '/api/applications/{id}': {
+      get: {
+        summary: 'ID ile Tekil Başvuru Detayı (Direct API Route)',
+        tags: ['API Applications'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Başvuru detayı' }, 404: { description: 'Bulunamadı' } }
+      },
+      put: {
+        summary: 'Başvuru Durumu ve Detayını Güncelle (Direct API Route)',
+        tags: ['API Applications'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Başvuru güncellendi' } }
+      },
+      delete: {
+        summary: 'Başvuruyu Sil (Direct API Route)',
+        tags: ['API Applications'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Başvuru silindi' } }
+      }
+    },
+    '/api/job-postings/{jobPostingId}/applications': {
+      get: {
+        summary: 'Belirli İlana Yapılan Başvuruları Listele (Nested API Route: JobPosting -> Applications)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'jobPostingId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'İlana ait başvurular' } }
+      },
+      post: {
+        summary: 'Belirli İlan İçin Yeni Başvuru Gönder (Nested API Route)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'jobPostingId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { applicant_user_id: 12, resume_url: 'https://cv.link', cover_letter: 'Ön yazı' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'Başvuru kaydedildi' } }
+      }
+    },
+    '/api/users/{userId}/applications': {
+      get: {
+        summary: 'Kullanıcının Yaptığı Başvuruları Listele (Nested API Route: User -> Applications)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Kullanıcıya ait başvurular' } }
+      },
+      post: {
+        summary: 'Kullanıcı Adına Yeni Başvuru Yap (Nested API Route)',
+        tags: ['Nested Routes'],
+        parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                example: { job_posting_id: 1, resume_url: 'https://cv.link', cover_letter: 'Ön yazı' }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'Başvuru kaydedildi' } }
+      }
     }
   }
 };
@@ -503,15 +601,21 @@ app.use('/api/users', apiUserRoutes);
 app.use('/api/announcements', apiAnnouncementRoutes);
 app.use('/api/departments', apiDepartmentRoutes);
 app.use('/api/job-postings', apiJobPostingRoutes);
+app.use('/api/applications', apiApplicationRoutes);
 
 // 2. Nested REST API Routes (Child Resources with mergeParams)
 app.use('/api/departments/:departmentId/job-postings', apiJobPostingRoutes);
 app.use('/api/users/:userId/job-postings', apiJobPostingRoutes);
+app.use('/api/job-postings/:jobPostingId/applications', apiApplicationRoutes);
+app.use('/api/users/:userId/applications', apiApplicationRoutes);
 
 // 3. Web Views & HTML Actions (Direct & Nested)
 app.use('/job-postings', jobPostingRoutes);
 app.use('/departments/:departmentId/job-postings', jobPostingRoutes);
 app.use('/users/:userId/job-postings', jobPostingRoutes);
+app.use('/applications', applicationRoutes);
+app.use('/job-postings/:jobPostingId/applications', applicationRoutes);
+app.use('/users/:userId/applications', applicationRoutes);
 app.use('/', userRoutes);
 app.use('/', announcementRoutes);
 app.use('/', departmentRoutes);
