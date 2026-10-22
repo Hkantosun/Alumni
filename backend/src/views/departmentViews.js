@@ -80,7 +80,8 @@ const DepartmentViews = {
               <a href="/home">🏠 Ana Sayfa</a>
               <a href="/users">👥 Kullanıcılar</a>
               <a href="/departments" class="active">🏛️ Bölümler (Direct)</a>
-              <a href="/job-postings">💼 İlanlar (Direct)</a>
+              <a href="/job-postings">💼 İlanlar</a>
+              <a href="/applications">📄 Başvurular</a>
               <a href="/announcements">📢 Duyurular</a>
               <a href="/api/swagger" target="_blank" style="color: #38bdf8; font-weight: bold;">⚡ Swagger API</a>
             </nav>

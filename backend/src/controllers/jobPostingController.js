@@ -11,6 +11,7 @@
 const JobPostingModel = require('../models/jobPostingModel');
 const DepartmentModel = require('../models/departmentModel');
 const UserModel = require('../models/userModel');
+const ApplicationModel = require('../models/applicationModel');
 const JobPostingViews = require('../views/jobPostingViews');
 
 const JobPostingController = {
@@ -33,22 +34,34 @@ const JobPostingController = {
         currentUser = await UserModel.getById(userId);
       }
 
-      const [jobPostings, departments] = await Promise.all([
+      const [jobPostings, departments, users, allApplications] = await Promise.all([
         JobPostingModel.getAll({ departmentId, userId }),
-        DepartmentModel.getAll()
+        DepartmentModel.getAll(),
+        UserModel.getAll(),
+        ApplicationModel.getAll()
       ]);
+
+      // Calculate application count for each job posting
+      const appCountMap = {};
+      allApplications.forEach(a => {
+        appCountMap[a.job_posting_id] = (appCountMap[a.job_posting_id] || 0) + 1;
+      });
+      jobPostings.forEach(j => {
+        j.applicationsCount = appCountMap[j.id] || 0;
+      });
 
       const html = JobPostingViews.renderJobPostingListPage(jobPostings, {
         departments,
         currentDepartment,
         currentUser,
+        users,
         isNested: Boolean(departmentId || userId)
       });
 
       res.send(html);
     } catch (err) {
       console.error('Error in renderJobPostingList:', err);
-      res.status(500).send('İlanlar listelenirken hata oluştu.');
+      res.status(500).send('İlanlar listelenirken hata oluştu: ' + err.message);
     }
   },
 
@@ -58,17 +71,21 @@ const JobPostingController = {
   async renderJobPostingDetail(req, res) {
     try {
       const jobId = req.params.id;
-      const job = await JobPostingModel.getById(jobId);
+      const [job, applications, users] = await Promise.all([
+        JobPostingModel.getById(jobId),
+        ApplicationModel.getByJobPostingId(jobId),
+        UserModel.getAll()
+      ]);
 
       if (!job) {
         return res.status(404).send('İlan bulunamadı.');
       }
 
-      const html = JobPostingViews.renderJobPostingDetailPage(job);
+      const html = JobPostingViews.renderJobPostingDetailPage(job, { applications, users });
       res.send(html);
     } catch (err) {
       console.error('Error in renderJobPostingDetail:', err);
-      res.status(500).send('İlan detayı alınırken hata oluştu.');
+      res.status(500).send('İlan detayı alınırken hata oluştu: ' + err.message);
     }
   },
 
@@ -78,16 +95,17 @@ const JobPostingController = {
   async renderEditForm(req, res) {
     try {
       const jobId = req.params.id;
-      const [job, departments] = await Promise.all([
+      const [job, departments, users] = await Promise.all([
         JobPostingModel.getById(jobId),
-        DepartmentModel.getAll()
+        DepartmentModel.getAll(),
+        UserModel.getAll()
       ]);
 
       if (!job) {
         return res.status(404).send('Düzenlenecek ilan bulunamadı.');
       }
 
-      const html = JobPostingViews.renderEditForm(job, departments);
+      const html = JobPostingViews.renderEditForm(job, departments, users);
       res.send(html);
     } catch (err) {
       console.error('Error in renderEditForm:', err);

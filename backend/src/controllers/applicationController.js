@@ -33,18 +33,24 @@ const ApplicationController = {
         currentUser = await UserModel.getById(userId);
       }
 
-      const applications = await ApplicationModel.getAll({ jobPostingId, userId });
+      const [applications, jobPostings, users] = await Promise.all([
+        ApplicationModel.getAll({ jobPostingId, userId }),
+        JobPostingModel.getAll(),
+        UserModel.getAll()
+      ]);
 
       const html = ApplicationViews.renderApplicationListPage(applications, {
         currentJob,
         currentUser,
+        jobPostings,
+        users,
         isNested: Boolean(jobPostingId || userId)
       });
 
       res.send(html);
     } catch (err) {
       console.error('Error in renderApplicationList:', err);
-      res.status(500).send('Başvurular listelenirken hata oluştu.');
+      res.status(500).send('Başvurular listelenirken hata oluştu: ' + err.message);
     }
   },
 
@@ -64,7 +70,7 @@ const ApplicationController = {
       res.send(html);
     } catch (err) {
       console.error('Error in renderApplicationDetail:', err);
-      res.status(500).send('Başvuru detayı alınırken hata oluştu.');
+      res.status(500).send('Başvuru detayı alınırken hata oluştu: ' + err.message);
     }
   },
 
@@ -74,17 +80,21 @@ const ApplicationController = {
   async renderEditForm(req, res) {
     try {
       const applicationId = req.params.id;
-      const application = await ApplicationModel.getById(applicationId);
+      const [application, jobPostings, users] = await Promise.all([
+        ApplicationModel.getById(applicationId),
+        JobPostingModel.getAll(),
+        UserModel.getAll()
+      ]);
 
       if (!application) {
         return res.status(404).send('Düzenlenecek başvuru bulunamadı.');
       }
 
-      const html = ApplicationViews.renderEditForm(application);
+      const html = ApplicationViews.renderEditForm(application, { jobPostings, users });
       res.send(html);
     } catch (err) {
       console.error('Error in renderEditForm:', err);
-      res.status(500).send('Form yüklenirken hata oluştu.');
+      res.status(500).send('Form yüklenirken hata oluştu: ' + err.message);
     }
   },
 
@@ -110,7 +120,19 @@ const ApplicationController = {
     } catch (err) {
       console.error('Error in createApplication action:', err);
       if (err.code === '23505') {
-        return res.status(409).send('Bu ilana zaten daha önce başvurdunuz. Çift başvuru yapılamaz.');
+        return res.status(409).send(`
+          <!DOCTYPE html>
+          <html lang="tr">
+          <head><meta charset="UTF-8"><title>Çift Başvuru Uyarısı</title></head>
+          <body style="font-family: sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 4rem;">
+            <div style="max-width: 500px; margin: 0 auto; background: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155;">
+              <h2 style="color: #f59e0b;">⚠️ Zaten Başvurdunuz</h2>
+              <p style="color: #cbd5e1;">Bu ilana daha önce bu aday adıyla bir başvuru yapılmış. Sistemde mükerrer başvuruya izin verilmemektedir.</p>
+              <a href="/applications" style="background: #38bdf8; color: #0f172a; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; display: inline-block; margin-top: 1rem;">Başvurular Listesine Dön</a>
+            </div>
+          </body>
+          </html>
+        `);
       }
       res.status(500).send('Başvuru oluşturulurken hata oluştu: ' + err.message);
     }
@@ -126,7 +148,7 @@ const ApplicationController = {
       res.redirect(`/applications/${applicationId}`);
     } catch (err) {
       console.error('Error in updateApplication action:', err);
-      res.status(500).send('Başvuru güncellenirken hata oluştu.');
+      res.status(500).send('Başvuru güncellenirken hata oluştu: ' + err.message);
     }
   },
 
@@ -140,7 +162,7 @@ const ApplicationController = {
       res.redirect('/applications');
     } catch (err) {
       console.error('Error in deleteApplication action:', err);
-      res.status(500).send('Başvuru silinirken hata oluştu.');
+      res.status(500).send('Başvuru silinirken hata oluştu: ' + err.message);
     }
   }
 };

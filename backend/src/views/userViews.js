@@ -88,11 +88,14 @@ const UserViews = {
             <span style="color: var(--muted);">Web MVC CRUD View</span>
           </div>
 
-          <div style="display: flex; gap: 1rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap;">
             <a href="/home" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏠 Ana Sayfa</a>
-            <a href="/users" style="color: var(--accent); text-decoration: none; font-weight: 600;">👥 Mezunlar & Kullanıcılar</a>
+            <a href="/users" style="color: var(--accent); text-decoration: none; font-weight: 600;">👥 Kullanıcılar</a>
+            <a href="/departments" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏛️ Bölümler</a>
+            <a href="/job-postings" style="color: var(--muted); text-decoration: none; font-weight: 600;">💼 İlanlar</a>
+            <a href="/applications" style="color: var(--muted); text-decoration: none; font-weight: 600;">📄 Başvurular</a>
             <a href="/announcements" style="color: var(--muted); text-decoration: none; font-weight: 600;">📢 Duyurular</a>
-            <a href="/api/swagger" target="_blank" style="color: var(--muted); text-decoration: none; font-weight: 600;">📚 Swagger API Dokümanı</a>
+            <a href="/api/swagger" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 600;">📚 Swagger API</a>
           </div>
 
           <!-- CREATE FORM (POST /users) -->

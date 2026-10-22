@@ -189,26 +189,144 @@ const UserController = {
       <html lang="tr">
       <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Alumni Tracking System - Ana Sayfa</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; text-align: center; }
-          .hero { max-width: 700px; margin: 4rem auto; background: #1e293b; padding: 3rem; border-radius: 16px; border: 1px solid #334155; }
-          h1 { color: #818cf8; font-size: 2.2rem; margin-bottom: 1rem; }
-          p { color: #94a3b8; line-height: 1.6; }
-          .nav-btns { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap; }
-          .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
-          .btn-primary { background: #6366f1; color: white; }
-          .btn-secondary { background: #334155; color: #38bdf8; }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+          :root {
+            --bg: #0b0f19;
+            --surface: #111827;
+            --card-bg: #1e293b;
+            --card-hover: #243247;
+            --accent: #38bdf8;
+            --purple: #a855f7;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+          }
+          * { box-sizing: border-box; }
+          body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2.5rem 1rem;
+          }
+          .container { max-width: 1050px; margin: 0 auto; }
+          .hero {
+            background: linear-gradient(180deg, #1e293b 0%, #111827 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            margin-bottom: 2.5rem;
+          }
+          h1 {
+            font-size: 2.6rem;
+            margin: 0 0 1rem 0;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+          }
+          p.lead {
+            font-size: 1.15rem;
+            color: var(--muted);
+            max-width: 650px;
+            margin: 0 auto 1.5rem auto;
+            line-height: 1.6;
+          }
+          .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+          }
+          .module-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.75rem;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+          }
+          .module-card:hover {
+            transform: translateY(-4px);
+            background: var(--card-hover);
+            border-color: var(--accent);
+          }
+          .module-icon { font-size: 2.2rem; }
+          .module-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
+          .module-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.5; margin: 0; }
+          .module-badge {
+            align-self: flex-start;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
         </style>
       </head>
       <body>
-        <div class="hero">
-          <h1>🎓 Alumni Tracking System</h1>
-          <p>Mezunlar, öğrenciler ve akademisyenleri buluşturan PostgreSQL destekli web platformu.</p>
-          <div class="nav-btns">
-            <a href="/users" class="btn btn-primary">👥 Kullanıcı CRUD Paneli</a>
-            <a href="/announcements" class="btn btn-secondary">📢 Duyuru CRUD Paneli</a>
-            <a href="/api/swagger" class="btn btn-secondary">📚 Swagger API Dokümantasyonu</a>
+        <div class="container">
+          <div class="hero">
+            <h1>🎓 Alumni Tracking System</h1>
+            <p class="lead">
+              Mezunlar, öğrenciler ve akademik personeli birbirine bağlayan, kariyer ve başvuru takibi sağlayan tam kapsamlı web platformu.
+            </p>
+          </div>
+
+          <div class="modules-grid">
+            <a href="/job-postings" class="module-card">
+              <span class="module-icon">💼</span>
+              <span class="module-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">Kariyer & İlanlar</span>
+              <h3 class="module-title">İş & Staj İlanları</h3>
+              <p class="module-desc">Mezun ve kurumların paylaştığı iş/staj ilanlarını listeleyin, bölümlere göre filtreleyin ve yeni pozisyon açın.</p>
+            </a>
+
+            <a href="/applications" class="module-card">
+              <span class="module-icon">📄</span>
+              <span class="module-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Başvuru Yönetimi</span>
+              <h3 class="module-title">İş & Staj Başvuruları</h3>
+              <p class="module-desc">İlanlara yapılan tüm başvuruları inceleyin, başvuru durumlarını (kabul, inceleme, ret) güncelleyin ve CV'leri görüntüleyin.</p>
+            </a>
+
+            <a href="/departments" class="module-card">
+              <span class="module-icon">🏛️</span>
+              <span class="module-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Akademik Birimler</span>
+              <h3 class="module-title">Bölümler (Nested Rotalar)</h3>
+              <p class="module-desc">Üniversite bölümlerini ve bölümlere bağlı ilanları nested rotalar (/departments/:id/job-postings) üzerinden inceleyin.</p>
+            </a>
+
+            <a href="/users" class="module-card">
+              <span class="module-icon">👥</span>
+              <span class="module-badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc;">Kullanıcı Yönetimi</span>
+              <h3 class="module-title">Mezunlar & Kullanıcılar</h3>
+              <p class="module-desc">Mezun, öğrenci ve akademik personel profillerini listeleyin, filtreleyin ve yeni kayıtlar oluşturun.</p>
+            </a>
+
+            <a href="/announcements" class="module-card">
+              <span class="module-icon">📢</span>
+              <span class="module-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Haber & Duyuru</span>
+              <h3 class="module-title">Duyurular & Etkinlikler</h3>
+              <p class="module-desc">Mezunlar ve öğrenciler için duyuru, kariyer günleri ve etkinlik haberlerini yönetin.</p>
+            </a>
+
+            <a href="/api/swagger" target="_blank" class="module-card">
+              <span class="module-icon">⚡</span>
+              <span class="module-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">OpenAPI 3.0</span>
+              <h3 class="module-title">Swagger API Dokümantasyonu</h3>
+              <p class="module-desc">Tüm REST API ve Nested endpoint'lerini interaktif Swagger UI konsolu üzerinden test edin ve keşfedin.</p>
+            </a>
           </div>
         </div>
       </body>

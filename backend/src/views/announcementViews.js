@@ -101,9 +101,12 @@ const AnnouncementViews = {
 
           <div class="nav-links">
             <a href="/home">🏠 Ana Sayfa</a>
-            <a href="/users">👥 Mezunlar & Kullanıcılar</a>
+            <a href="/users">👥 Kullanıcılar</a>
+            <a href="/departments">🏛️ Bölümler</a>
+            <a href="/job-postings">💼 İlanlar</a>
+            <a href="/applications">📄 Başvurular</a>
             <a href="/announcements" class="active">📢 Duyurular</a>
-            <a href="/api/swagger" target="_blank">📚 Swagger API Dokümanı</a>
+            <a href="/api/swagger" target="_blank">📚 Swagger API</a>
           </div>
 
           <!-- CREATE FORM (POST /announcements) -->
