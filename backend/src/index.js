@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
@@ -556,12 +557,16 @@ const swaggerSpec = swaggerJsdoc({ swaggerDefinition, apis: [] });
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Swagger UI rotası (/api/swagger)
 app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // GET / — Ana sayfa, sistem durumu
 app.get('/', (req, res) => {
+  if (req.accepts('html') && !req.accepts('json')) {
+    return res.redirect('/home');
+  }
   res.send('ok');
 });
 
