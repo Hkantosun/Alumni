@@ -16,6 +16,10 @@ const apiJobPostingRoutes = require('./routes/apiJobPostingRoutes');
 const jobPostingRoutes = require('./routes/jobPostingRoutes');
 const apiApplicationRoutes = require('./routes/apiApplicationRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const loggerMiddleware = require('./middlewares/loggerMiddleware');
+const notFoundGuardian = require('./middlewares/notFoundGuardian');
+const serverErrorGuardian = require('./middlewares/serverErrorGuardian');
+const NotFoundView = require('./views/notFoundView');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -554,6 +558,7 @@ const swaggerDefinition = {
 const swaggerSpec = swaggerJsdoc({ swaggerDefinition, apis: [] });
 
 // Middleware
+app.use(loggerMiddleware);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -577,6 +582,26 @@ app.get('/api/health', (req, res) => {
     message: 'Backend is healthy',
     timestamp: new Date().toISOString()
   });
+});
+
+// GET /404 - Generic 404 Error Page
+app.get('/404', (req, res) => {
+  const requestedUrl = req.query.requestedUrl || req.originalUrl;
+  const reason = req.query.reason || 'Talep edilen sayfa veya kaynak sunucuda bulunamadı.';
+  const method = req.query.method || req.method;
+
+  if (req.accepts('json') && !req.accepts('html')) {
+    return res.status(404).json({
+      status: 404,
+      error: 'Not Found',
+      reason,
+      path: requestedUrl,
+      timestamp: new Date().toISOString(),
+      documentation: '/api/swagger'
+    });
+  }
+
+  res.status(404).send(NotFoundView.renderNotFoundPage({ requestedUrl, reason, method }));
 });
 
 // Utility Routes
@@ -624,6 +649,27 @@ app.use('/users/:userId/applications', applicationRoutes);
 app.use('/', userRoutes);
 app.use('/', announcementRoutes);
 app.use('/', departmentRoutes);
+
+// 4. Test Route for 5xx Guardian Verification
+app.get('/api/test-500', (req, res, next) => {
+  const err = new Error('Simulated database or server failure');
+  err.status = 500;
+  err.reason = 'Simulated internal server exception to verify 5xx Guardian Middleware response.';
+  next(err);
+});
+
+app.get('/test-500', (req, res, next) => {
+  const err = new Error('Simulated web application crash');
+  err.status = 500;
+  err.reason = 'Simulated web page failure to verify 5xx Guardian HTML presentation.';
+  next(err);
+});
+
+// 404 Guardian Middleware (Catch-all for unmatched routes with explicit reason)
+app.use(notFoundGuardian);
+
+// 5xx Guardian Middleware (Global Error Handler for server exceptions with explicit reason)
+app.use(serverErrorGuardian);
 
 // Sunucuyu başlat
 app.listen(PORT, () => {
