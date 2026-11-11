@@ -13,6 +13,8 @@
 - [Database Design Documentation (ddd.md)](#-database-design-documentation-dddmd)
 - [Database Migrations, Factories & Seeds](#-database-migrations-factories--seeds)
 - [MVC Architecture](#-mvc-architecture)
+- [Middleware & Guardian Architecture](#-middleware--guardian-architecture)
+- [Logging System & Error Tracking](#-logging-system--error-tracking)
 - [Core Requirements](#-core-requirements-defined-by-the-instructor)
 - [Additional Features](#-additional-features-developer-choice)
 - [Project Philosophy](#-project-philosophy)
@@ -180,7 +182,7 @@ Comprehensive database schema and relational entity specifications are documente
   - `departments` (Academic departments and faculties)
   - `users` (Core authentication and user identity)
   - `alumni_profiles`, `student_profiles`, `academic_profiles` (Role-specific 1:1 profile extensions)
-  - `job_experiences` & `job_postings` (Careers, past roles, and job/internship opportunities)
+  - `job_experiences` & `job_postings` (Careers, past roles, and job/internship opportunities with explicit business rules: `title` required & max 120 chars, `company` required, `city` required & explicit, `short_description` required, `wage` required & explicit)
   - `mentorship_requests` (Mentorship connections and statuses)
   - `events` & `event_rsvps` (Alumni/student events and attendance tracking)
   - `announcements` (Departmental and general announcements)
@@ -291,11 +293,14 @@ Alumni/
 ├── README.md                    # Project documentation & MVC architecture
 ├── implementation_plan.md       # Development roadmap & feature specifications
 ├── LICENSE                      # Open-source license file
+├── logs/                        # [Logging] Persistent log directory mounted from Docker
+│   ├── error.logs               # Formatted error logs (4xx, 5xx, database and syntax errors)
+│   └── combined.logs            # Complete request access logs with timestamps and response times
 └── backend/                     # Backend application directory
     ├── Dockerfile               # [DevOps] Container build configuration for Express service
     ├── package.json             # Node.js dependencies & scripts (express, swagger-ui-express, cors)
     └── src/                     # Application source code
-        ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI & mounts routes
+        ├── index.js             # [Application Entry Point] Configures Express app, Swagger UI, routes & guardians
         ├── db/                  # Database infrastructure (Migrations, Factories, Seeds)
         │   ├── db.js            # PostgreSQL pool client module
         │   ├── migrate.js       # Transactional migration runner with rollback capability
@@ -304,6 +309,12 @@ Alumni/
         │   ├── factories/       # Entity factories (User, Department, Profiles, Events, etc.)
         │   │   └── index.js
         │   └── migrations/      # Versioned migration steps (001 to 007 with up/down)
+        ├── middlewares/         # Express custom middleware layer
+        │   ├── loggerMiddleware.js    # [Middleware] Terminal request logger with ANSI colored status codes
+        │   ├── notFoundGuardian.js    # [Middleware] 404 Guardian catching invalid routes and redirecting to /404
+        │   └── serverErrorGuardian.js # [Middleware] 5xx Guardian global error handler with explicit reasons
+        ├── utils/               # Utility helper modules
+        │   └── fileLogger.js          # [Utility] Asynchronous file logger persisting to logs/error.logs
         ├── models/              # Data model abstractions (PostgreSQL connected)
         │   ├── userModel.js         # [Model] PostgreSQL User Model querying users table via db pool
         │   ├── announcementModel.js # [Model] PostgreSQL Announcement Model querying announcements table via db pool
@@ -311,6 +322,8 @@ Alumni/
         │   ├── jobPostingModel.js   # [Model] PostgreSQL Job Posting Model (direct + nested relationship queries)
         │   └── applicationModel.js  # [Model] PostgreSQL Application Model (direct + nested relationship queries)
         ├── views/               # Presentation and HTML rendering templates
+        │   ├── homeView.js          # [View] Istanbul University YBS home and about page view
+        │   ├── notFoundView.js      # [View] Generic 404 Error Page view with reasons and navigation
         │   ├── userViews.js         # [View] User Views module (renderUserListPage, etc.)
         │   ├── announcementViews.js # [View] Announcement Views module (renderAnnouncementListPage, etc.)
         │   ├── departmentViews.js   # [View] Department Views module (renderDepartmentListPage, etc.)
@@ -344,6 +357,13 @@ Alumni/
 
 | Path / File | MVC Component | Description & Responsibilities |
 |---|---|---|
+| **`backend/src/middlewares/loggerMiddleware.js`** | **Middleware** | Intercepts HTTP traffic and prints method, path, color-coded status codes, and execution duration to terminal and access log. |
+| **`backend/src/middlewares/notFoundGuardian.js`** | **Middleware (Guardian)** | Intercepts unmatched requests, records failure to `logs/error.logs`, redirects web clients to `/404`, and returns JSON for API clients. |
+| **`backend/src/middlewares/serverErrorGuardian.js`** | **Middleware (Guardian)** | Global Express 4-argument error handler intercepting 5xx/database/syntax errors, formatting explicit reasons, and persisting to `logs/error.logs`. |
+| **`backend/src/utils/fileLogger.js`** | **Utility** | Asynchronous disk logging service managing `logs/error.logs` and `logs/combined.logs`. |
+| **`backend/src/views/notFoundView.js`** | **View** | Generates the Generic 404 HTML Error Page with error code, explicit reason box, requested URL pill, and quick navigation. |
+| **`backend/src/views/homeView.js`** | **View** | Generates the Istanbul University YBS Home and About pages with metrics, navigation tabs, and historical visuals. |
+| **`logs/error.logs`** | **Log Store** | Persistent host-mounted log file storing all 4xx, 5xx, database constraint, and application error traces. |
 | **`backend/src/models/userModel.js`** | **Model** | Connects to PostgreSQL `users` table via `db.query` pool client and provides asynchronous CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
 | **`backend/src/models/announcementModel.js`** | **Model** | Connects to PostgreSQL `announcements` table via `db.query` pool client and provides asynchronous CRUD functions (`getAll`, `getById`, `create`, `update`, `patch`, `delete`, `count`). |
 | **`backend/src/views/userViews.js`** | **View** | Generates HTML page templates for User Listing (`GET /users`), Details, Edit Form, and CRUD response pages. |
@@ -372,6 +392,133 @@ Alumni/
 | **`.env`** | **Configuration** | Local environment file (git-ignored) containing database credentials and ports. |
 | **`.example.env`** | **Configuration Template** | Template environment variables file to guide setting up `.env`. |
 | **`ddd.md`** | **Model & Architecture** | Comprehensive Database Design Documentation containing Mermaid ER diagram, table schemas, and data dictionary. |
+
+---
+
+## 🛡️ Middleware & Guardian Architecture
+
+The backend pipeline includes a multi-layered middleware and error-handling system designed to ensure robustness, observability, and graceful failure handling across all client types:
+
+```
+[Incoming Request]
+        |
+        v
++-------------------------------------------------------+
+| 1. Logger Middleware (loggerMiddleware.js)            |
+|    - Computes high-resolution request duration        |
+|    - Prints ANSI color-coded log lines to terminal   |
+|    - Appends access log entries to logs/combined.logs |
++-------------------------------------------------------+
+        |
+        v
++-------------------------------------------------------+
+| 2. Core Middlewares (cors, express.json, urlencoded)  |
++-------------------------------------------------------+
+        |
+        v
++-------------------------------------------------------+
+| 3. Application Controllers & Nested Routers           |
+|    - REST API Endpoints (/api/*)                      |
+|    - HTML Web Views & Actions (Users, Jobs, etc.)     |
+|    - /404 Dedicated Generic Error Route               |
++-------------------------------------------------------+
+        |
+        |---> (Unmatched Route / Invalid Path)
+        |           |
+        |           v
+        |     +-------------------------------------------------------+
+        |     | 4. 404 Guardian Middleware (notFoundGuardian.js)      |
+        |     |    - Computes explicit reason for failure             |
+        |     |    - Logs error event to logs/error.logs              |
+        |     |    - Returns JSON for REST API requests               |
+        |     |    - Redirects (302) web requests to /404             |
+        |     +-------------------------------------------------------+
+        |
+        |---> (Unhandled Exception / next(err))
+                    |
+                    v
+              +-------------------------------------------------------+
+              | 5. 5xx Guardian Middleware (serverErrorGuardian.js)   |
+              |    - Express 4-argument error handler (err,req,res,nxt)|
+              |    - Detects PostgreSQL errors (23505, 23503, etc.)   |
+              |    - Formats explicit reason & persists to error.logs |
+              |    - Returns 500 JSON (API) or styled HTML (Web)      |
+              +-------------------------------------------------------+
+```
+
+### 1. 🔍 Terminal Request Logger (`backend/src/middlewares/loggerMiddleware.js`)
+- Intercepts every incoming HTTP request and records execution duration using `process.hrtime()`.
+- Prints colored terminal lines:
+  - `2xx`: Green (Success)
+  - `3xx`: Cyan (Redirects)
+  - `4xx`: Yellow (Client Errors)
+  - `5xx`: Red (Server Failures)
+- Example Terminal Output:
+  ```text
+  [2026-11-11 07:38:21] GET /api/health 200 - 2.10ms
+  [2026-11-11 07:38:21] GET /api/unknown-test-404 404 - 3.12ms
+  [2026-11-11 07:38:21] GET /api/test-500 500 - 4.92ms
+  ```
+
+### 2. 🛡️ 404 Guardian Middleware & Generic 404 Page
+- **`notFoundGuardian.js`:** Intercepts invalid routes and missing resources.
+  - Automatically identifies whether an API endpoint or a web page was requested.
+  - Generates an explicit **Reason** for the failure.
+  - **Redirects** web/browser requests with HTTP 302 to the generic `/404?requestedUrl=...&reason=...` page.
+  - Returns structured JSON for API clients (`/api/*`).
+  - Writes the error to `logs/error.logs`.
+- **Generic 404 View (`backend/src/views/notFoundView.js` & `GET /404`):**
+  - Styled with Istanbul University YBS theme, displaying the requested invalid URL, failure reason, and quick navigation links.
+
+### 3. 🚨 5xx Guardian Middleware (`backend/src/middlewares/serverErrorGuardian.js`)
+- Standard Express 4-argument global error handler `(err, req, res, next)`.
+- Categorizes runtime and database errors into human-readable reasons:
+  - `23505`: Database Unique Constraint Violation (duplicate entry)
+  - `23503`: Database Foreign Key Violation (missing referenced entity)
+  - `23502`: Database Not-Null Violation (required column missing)
+  - `ECONNREFUSED` / `08*`: PostgreSQL Connection Failure
+  - `SyntaxError` / `entity.parse.failed`: Invalid JSON body syntax
+- Persists error traces and reasons to `logs/error.logs`.
+- Renders an interactive `🛡️ 5xx Guardian` HTML error card for browsers and structured JSON for APIs.
+
+---
+
+## 🪵 Logging System & Error Tracking
+
+The application features a disk-persisted logging subsystem managed via `backend/src/utils/fileLogger.js`:
+
+### 📂 Log Directory & Files (`logs/`)
+- **`logs/error.logs`:** Dedicated error audit log. Every 4xx not-found, 5xx internal exception, database constraint failure, and syntax error is formatted and written here with timestamp, method, path, status, failure reason, and stack trace:
+  ```text
+  [2026-11-11 07:38:21] [STATUS 404] GET /api/unknown-test-404
+    Reason : The requested API endpoint 'GET /api/unknown-test-404' does not exist on this server. Please verify the URL path, HTTP method, and query parameters.
+  --------------------------------------------------------------------------------
+  [2026-11-11 07:38:21] [STATUS 500] GET /api/test-500
+    Reason : Simulated internal server exception to verify 5xx Guardian Middleware response.
+    Details: Simulated database or server failure
+    Stack  : Error: Simulated database or server failure
+             at /app/src/index.js:634:15
+  --------------------------------------------------------------------------------
+  ```
+- **`logs/combined.logs`:** Combined request log tracking timestamp, method, URL, status, and duration for all traffic.
+
+### 🐳 Docker Volume Mount
+The host's `./logs` directory is mapped to the container's `/app/logs` in `docker-compose.yml`:
+```yaml
+services:
+  backend:
+    volumes:
+      - ./backend/src:/app/src
+      - ./logs:/app/logs
+```
+This guarantees that all logs written by the container are persisted on the host machine and can be observed in real time:
+```bash
+# Live stream container terminal logs
+docker compose logs -f backend
+
+# Live stream error logs from host
+tail -f logs/error.logs
+```
 
 ---
 
