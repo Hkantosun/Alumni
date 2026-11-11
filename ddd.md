@@ -1,9 +1,9 @@
 # 🗄️ Database Design Documentation (DDD)
 ## Alumni Tracking System
 
-> **Belge Sürümü:** 1.1.0  
-> **Tarih:** 2026-10-21  
-> **Durum:** Üretildi ve Aktif (Implemented & Live Schema in PostgreSQL 16)  
+> **Belge Sürümü:** 1.2.0  
+> **Tarih:** 2026-11-11  
+> **Durum:** Güncellendi (İş İlanı Kuralları Eklendi)  
 > **Hedef RDBMS:** PostgreSQL 16+ (İlişkisel Veritabanı Mimarisi)  
 > **Uygulama:** Bu şema `backend/src/db/schema.sql` dosyasında DDL olarak üretilmiş ve `alumni_db` PostgreSQL veritabanında aktif olarak oluşturulmuştur.
 
@@ -131,7 +131,10 @@ erDiagram
         int department_id FK
         varchar title
         varchar company
+        varchar city
+        varchar wage
         varchar job_type
+        varchar short_description
         text description
         boolean is_active
     }
@@ -291,16 +294,26 @@ Mezunların geçmiş ve mevcut çalışma tecrübelerini kronolojik olarak sakla
 ### 3.7 `job_postings` (İş ve Staj İlanları)
 Mezunlar veya akademisyenler tarafından paylaşılan iş/staj fırsatları.
 
+#### 📌 İş Kuralları ve Doğrulama Kriterleri (Business & Validation Rules)
+- **Title Required & Max Length:** İlan başlığı (`title`) zorunludur (`NOT NULL`) ve en fazla 120 karakter olabilir (`VARCHAR(120)`).
+- **Company Required:** İlanı veren şirket/kurum adı (`company`) zorunludur (`NOT NULL`).
+- **City Explicit & Required:** İlanın geçerli olduğu şehir (`city`) ilanda açık ve net bir şekilde belirtilmelidir (`NOT NULL`).
+- **Short Description Required:** Tüm iş ilanlarında pozisyona dair kısa bir açıklama/özet (`short_description`) bulunması zorunludur (`NOT NULL`).
+- **Wage Explicit & Required:** İş ilanında pozisyona ait ücret/maaş (`wage`) bilgisi açık ve net bir şekilde belirtilmelidir (`NOT NULL`).
+
 | Sütun Adı | Veri Tipi | Kısıtlar (Constraints) | Açıklama |
 |---|---|---|---|
 | `id` | `SERIAL` | `PRIMARY KEY` | İlan ID |
 | `posted_by_user_id`| `INTEGER` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | İlanı yayınlayan kullanıcı |
 | `department_id` | `INTEGER` | `NULL`, `REFERENCES departments(id) ON DELETE SET NULL` | İlgili akademik bölüm (bölüm bazlı filtreleme için; genel ilanlar için NULL) |
-| `title` | `VARCHAR(200)` | `NOT NULL` | İlan başlığı |
-| `company` | `VARCHAR(150)` | `NOT NULL` | Şirket / Kurum |
-| `location` | `VARCHAR(100)` | `NOT NULL` | Konum (Şehir / Remote) |
+| `title` | `VARCHAR(120)` | `NOT NULL` | İlan başlığı (Zorunlu, maksimum 120 karakter) |
+| `company` | `VARCHAR(150)` | `NOT NULL` | Şirket / Kurum (Zorunlu) |
+| `city` | `VARCHAR(100)` | `NOT NULL` | Şehir bilgisi (İlanda açık ve net şekilde belirtilmelidir) |
+| `location` | `VARCHAR(100)` | `NULL` | Konum / Çalışma biçimi lokasyonu (Ofis, Hibrit, Remote vb.) |
+| `wage` | `VARCHAR(100)` | `NOT NULL` | Ücret / Maaş bilgisi (İlanda açık ve net şekilde belirtilmelidir) |
 | `job_type` | `VARCHAR(30)` | `NOT NULL`, `CHECK (job_type IN ('Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'))` | Çalışma biçimi |
-| `description` | `TEXT` | `NOT NULL` | İlan açıklaması ve aranan kriterler |
+| `short_description`| `VARCHAR(300)` | `NOT NULL` | Kısa iş tanımı / ilanın kısa özeti (Tüm ilanlar için zorunlu) |
+| `description` | `TEXT` | `NOT NULL` | Detaylı iş tanımı ve aranan kriterler |
 | `application_link` | `VARCHAR(500)` | `NULL` | Başvuru linki veya e-posta |
 | `is_active` | `BOOLEAN` | `NOT NULL`, `DEFAULT TRUE` | İlan yayında mı? |
 | `created_at` | `TIMESTAMP` | `NOT NULL`, `DEFAULT NOW()` | İlan yayın tarihi |
@@ -420,6 +433,7 @@ Arama ve filtreleme işlemlerinde yüksek performans için aşağıdaki indeksle
    - `idx_alumni_dept_year`: `alumni_profiles(department_id, graduation_year)`
    - `idx_alumni_mentorship`: `alumni_profiles(available_for_mentorship) WHERE available_for_mentorship = TRUE`
    - `idx_job_postings_dept`: `job_postings(department_id)`
+   - `idx_job_postings_city`: `job_postings(city)`
    - `idx_job_postings_active`: `job_postings(is_active, created_at DESC)`
    - `idx_applications_job`: `applications(job_posting_id)`
    - `idx_applications_applicant`: `applications(applicant_user_id)`
