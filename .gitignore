@@ -15,6 +15,9 @@ yarn-error.log*
 
 # Logs
 *.log
+*.logs
+logs/
+backend/logs
 
 # Operating System Files
 .DS_Store

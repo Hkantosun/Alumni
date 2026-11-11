@@ -25,6 +25,7 @@ services:
       start_period: 5s
     volumes:
       - ./backend/src:/app/src
+      - ./logs:/app/logs
     networks:
       - alumni_network
 
