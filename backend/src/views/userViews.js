@@ -9,6 +9,8 @@
  *   6. Deleted View (POST /users/:id/delete -> Delete Response)
  */
 
+const SharedHeader = require('./sharedHeader');
+
 const UserViews = {
   /**
    * 1. READ ALL - Render User Listing HTML View (GET /users)
@@ -39,13 +41,15 @@ const UserViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🎓 Alumni System - Kullanıcı CRUD Yönetimi</title>
+        <title>🎓 Mezunlar & Kullanıcılar - İÜ YBS</title>
         <style>
+          ${SharedHeader.getHeaderStyles()}
+
           :root {
             --bg: #0f172a;
             --card-bg: #1e293b;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
             --text: #f8fafc;
             --muted: #94a3b8;
             --border: #334155;
@@ -53,10 +57,10 @@ const UserViews = {
             --warning: #f59e0b;
             --danger: #ef4444;
           }
-          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
-          .container { max-width: 1000px; margin: 0 auto; }
-          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-          h1 { color: #818cf8; margin: 0; font-size: 1.8rem; }
+          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+          .container { max-width: 1100px; margin: 2.5rem auto; padding: 0 1.5rem; }
+          .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+          .page-header h1 { color: #f8fafc; margin: 0; font-size: 1.8rem; font-weight: 700; }
           .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
           .card h2 { margin-top: 0; color: #38bdf8; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
           .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end; }
@@ -65,8 +69,8 @@ const UserViews = {
           input, select { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.65rem 0.8rem; border-radius: 6px; font-size: 0.95rem; }
           input:focus, select:focus { outline: none; border-color: var(--accent); }
           .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0.5rem 0.9rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
-          .btn-primary { background: var(--accent); color: white; }
-          .btn-primary:hover { background: var(--accent-hover); }
+          .btn-primary { background: #38bdf8; color: #070a12; }
+          .btn-primary:hover { background: #0284c7; color: #ffffff; }
           .btn-view { background: #334155; color: #38bdf8; }
           .btn-view:hover { background: #475569; }
           .btn-edit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
@@ -78,24 +82,16 @@ const UserViews = {
           td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
           .action-cells { display: flex; gap: 6px; align-items: center; }
           .id-badge { background: #334155; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; }
-          .role-badge { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 2px 10px; border-radius: 9999px; font-size: 0.8rem; }
+          .role-badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); padding: 2px 10px; border-radius: 9999px; font-size: 0.8rem; }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1>🎓 Alumni Tracking System</h1>
-            <span style="color: var(--muted);">Web MVC CRUD View</span>
-          </div>
+        ${SharedHeader.renderHeader('users')}
 
-          <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap;">
-            <a href="/home" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏠 Ana Sayfa</a>
-            <a href="/users" style="color: var(--accent); text-decoration: none; font-weight: 600;">👥 Kullanıcılar</a>
-            <a href="/departments" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏛️ Bölümler</a>
-            <a href="/job-postings" style="color: var(--muted); text-decoration: none; font-weight: 600;">💼 İlanlar</a>
-            <a href="/applications" style="color: var(--muted); text-decoration: none; font-weight: 600;">📄 Başvurular</a>
-            <a href="/announcements" style="color: var(--muted); text-decoration: none; font-weight: 600;">📢 Duyurular</a>
-            <a href="/api/swagger" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 600;">📚 Swagger API</a>
+        <div class="container">
+          <div class="page-header">
+            <h1>👥 Mezunlar ve Kullanıcılar</h1>
+            <span style="color: var(--muted); font-size: 0.9rem;">Toplam ${users.length} Kayıt</span>
           </div>
 
           <!-- CREATE FORM (POST /users) -->
@@ -159,8 +155,9 @@ const UserViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Kullanıcı Detayı - ${user.name}</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 550px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+          ${SharedHeader.getHeaderStyles()}
+          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 0; margin: 0; }
+          .card { max-width: 550px; margin: 3rem auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
           h2 { color: #38bdf8; margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
           .info-group { margin: 1.2rem 0; padding-bottom: 0.8rem; border-bottom: 1px solid #334155; }
           .label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
@@ -173,6 +170,7 @@ const UserViews = {
         </style>
       </head>
       <body>
+        ${SharedHeader.renderHeader('users')}
         <div class="card">
           <h2>👤 ${user.name || 'Kullanıcı #' + user.id}</h2>
           <div class="info-group">
@@ -222,8 +220,9 @@ const UserViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Kullanıcı Düzenle - ${user.name}</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+          ${SharedHeader.getHeaderStyles()}
+          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 0; margin: 0; }
+          .card { max-width: 500px; margin: 3rem auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
           h2 { color: #f59e0b; margin-top: 0; font-size: 1.5rem; }
           .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem; }
           label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
@@ -236,6 +235,7 @@ const UserViews = {
         </style>
       </head>
       <body>
+        ${SharedHeader.renderHeader('users')}
         <div class="card">
           <h2>✏️ Kullanıcı Düzenle (#${user.id})</h2>
           <form action="/users/${user.id}/update" method="POST">

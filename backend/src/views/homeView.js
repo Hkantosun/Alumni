@@ -3,6 +3,8 @@
  * Home Page & About Page View Layer
  */
 
+const SharedHeader = require('./sharedHeader');
+
 const HomeView = {
   renderHomePage({ users = [], jobPostings = [], applications = [], departments = [] } = {}) {
     const totalUsers = users.length;
@@ -49,27 +51,28 @@ const HomeView = {
             overflow-x: hidden;
           }
 
-          /* TOP STICKY NAVIGATION TABS */
+          /* TOP MINIMALIST HEADER (CLEAN & ELEGANT) */
           .top-header {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(11, 15, 25, 0.92);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
+            height: 72px;
+            background: rgba(7, 10, 18, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
           }
 
           .header-container {
-            max-width: 1280px;
+            max-width: 1360px;
+            height: 100%;
             margin: 0 auto;
-            padding: 0.85rem 1.5rem;
+            padding: 0 2rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1.5rem;
           }
 
           .brand {
@@ -77,110 +80,247 @@ const HomeView = {
             align-items: center;
             gap: 0.75rem;
             text-decoration: none;
-            color: var(--text);
+            color: #ffffff;
+            flex-shrink: 0;
+            transition: opacity 0.2s ease;
           }
 
-          .brand-emblem {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #800020, #400010);
-            border: 2px solid var(--iu-gold);
+          .brand:hover {
+            opacity: 0.9;
+          }
+
+          .brand-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(128, 0, 32, 0.95), rgba(212, 175, 55, 0.35));
+            border: 1px solid rgba(212, 175, 55, 0.45);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: 0 0 15px var(--iu-gold-glow);
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #ffffff;
+            letter-spacing: 0.04em;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
           }
 
           .brand-text {
             display: flex;
             flex-direction: column;
+            line-height: 1.25;
           }
 
-          .brand-uni {
+          .brand-name {
             font-family: 'Cinzel', serif;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
-            letter-spacing: 0.08em;
-            color: #f1f5f9;
-            text-transform: uppercase;
-          }
-
-          .brand-dept {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--iu-gold);
             letter-spacing: 0.03em;
-          }
-
-          .nav-tabs {
+            color: #ffffff;
             display: flex;
-            gap: 0.4rem;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 3px;
           }
 
-          .nav-tab {
-            color: var(--muted);
-            text-decoration: none;
-            padding: 0.55rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.88rem;
+          .brand-sparkle {
+            color: var(--iu-gold);
+            font-size: 0.75rem;
+            display: inline-block;
+            transform: translateY(-2px);
+          }
+
+          .brand-tag {
+            font-size: 0.74rem;
             font-weight: 500;
-            transition: all 0.2s ease;
+            color: var(--muted);
+            letter-spacing: 0.02em;
+          }
+
+          .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+          }
+
+          .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            padding: 0.4rem 0;
+            position: relative;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+          }
+
+          .nav-link:hover {
+            color: #ffffff;
+          }
+
+          .nav-link.active {
+            color: #ffffff;
+            font-weight: 600;
+          }
+
+          .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #d4af37, #e86034);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(232, 96, 52, 0.4);
+          }
+
+          .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+          }
+
+          .header-cta-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-          }
-
-          .nav-tab:hover {
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.05);
-          }
-
-          .nav-tab.active {
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.45rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #e86034 0%, #d44e24 100%);
             color: #ffffff;
-            background: linear-gradient(135deg, rgba(128, 0, 32, 0.6), rgba(56, 189, 248, 0.2));
-            border: 1px solid var(--border-gold);
+            font-size: 0.88rem;
             font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            box-shadow: 0 4px 16px rgba(232, 96, 52, 0.35);
+            transition: all 0.25s ease;
           }
 
-          .nav-tab.api-tab {
-            color: var(--accent);
-            font-weight: 600;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+          .header-cta-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(232, 96, 52, 0.55);
+            filter: brightness(1.08);
           }
 
-          .nav-tab.api-tab:hover {
-            background: rgba(56, 189, 248, 0.15);
+          @media (max-width: 1080px) {
+            .nav-links {
+              gap: 1.25rem;
+            }
           }
 
-          /* HERO SECTION WITH HISTORIC MAIN GATE BACKGROUND */
+          @media (max-width: 868px) {
+            .top-header {
+              height: auto;
+              padding: 0.75rem 0;
+            }
+            .header-container {
+              padding: 0 1rem;
+              flex-wrap: wrap;
+              gap: 0.75rem;
+            }
+            .nav-links {
+              order: 3;
+              width: 100%;
+              overflow-x: auto;
+              padding-bottom: 0.35rem;
+              gap: 1.25rem;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
+            }
+            .nav-links::-webkit-scrollbar {
+              display: none;
+            }
+            .brand-tag {
+              display: none;
+            }
+            .header-cta-pill {
+              padding: 0.45rem 1rem;
+              font-size: 0.82rem;
+            }
+          }
+
+          /* HERO SECTION WITH FULL-BLEED BACKGROUND VIDEO */
           .hero-section {
             position: relative;
-            min-height: 520px;
-            background: 
-              linear-gradient(to right, rgba(7, 10, 18, 0.96) 0%, rgba(7, 10, 18, 0.82) 50%, rgba(7, 10, 18, 0.94) 100%),
-              url('/images/iu_tarihi_kapi.jpg') center/cover no-repeat;
+            min-height: 580px;
+            overflow: hidden;
             display: flex;
             align-items: center;
-            padding: 4rem 1.5rem;
+            padding: 4.5rem 1.5rem;
             border-bottom: 1px solid var(--border);
+            background: #070a12;
           }
 
-          .hero-content {
-            max-width: 1200px;
-            margin: 0 auto;
+          .hero-video-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 3rem;
-            align-items: center;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+          }
+
+          .hero-bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            /* GPU hardware acceleration to eliminate UI lag & stutter */
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+            will-change: transform;
+            filter: brightness(0.85) contrast(1.05);
+          }
+
+          .hero-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              to right,
+              rgba(7, 10, 18, 0.94) 0%,
+              rgba(7, 10, 18, 0.80) 45%,
+              rgba(7, 10, 18, 0.35) 75%,
+              rgba(7, 10, 18, 0.70) 100%
+            );
+            pointer-events: none;
+            z-index: 1;
           }
 
           @media (max-width: 968px) {
-            .hero-content { grid-template-columns: 1fr; }
+            .hero-section {
+              min-height: 520px;
+              padding: 3rem 1.25rem;
+            }
+            .hero-video-overlay {
+              background: linear-gradient(
+                to bottom,
+                rgba(7, 10, 18, 0.92) 0%,
+                rgba(7, 10, 18, 0.80) 50%,
+                rgba(7, 10, 18, 0.94) 100%
+              );
+            }
+          }
+
+          .hero-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+          }
+
+          .hero-text {
+            max-width: 760px;
           }
 
           .hero-badge {
@@ -272,51 +412,6 @@ const HomeView = {
 
           .cta-secondary:hover {
             background: rgba(56, 189, 248, 0.25);
-          }
-
-          .hero-gate-card {
-            background: rgba(21, 29, 48, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-gold);
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-          }
-
-          .gate-img-wrapper {
-            position: relative;
-            width: 100%;
-            height: 240px;
-            overflow: hidden;
-          }
-
-          .gate-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-          }
-
-          .hero-gate-card:hover .gate-img {
-            transform: scale(1.05);
-          }
-
-          .gate-caption {
-            padding: 1.25rem;
-          }
-
-          .gate-title {
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            color: var(--iu-gold);
-            font-weight: 700;
-            margin-bottom: 0.3rem;
-          }
-
-          .gate-info {
-            font-size: 0.85rem;
-            color: var(--muted);
-            line-height: 1.5;
           }
 
           /* LIVE STATS STRIP */
@@ -563,34 +658,65 @@ const HomeView = {
         </style>
       </head>
       <body>
-        <!-- TOP STICKY NAVIGATION BAR -->
+        <!-- TOP MINIMALIST HEADER BAR -->
         <header class="top-header">
           <div class="header-container">
-            <a href="/home" class="brand">
-              <div class="brand-emblem">🏛️</div>
+            <!-- BRAND LOGO -->
+            <a href="/home" class="brand" aria-label="İstanbul Üniversitesi YBS Ana Sayfa">
+              <div class="brand-badge">İÜ</div>
               <div class="brand-text">
-                <span class="brand-uni">İstanbul Üniversitesi</span>
-                <span class="brand-dept">Yönetim Bilişim Sistemleri (YBS)</span>
+                <span class="brand-name">İstanbul Üniversitesi<span class="brand-sparkle">✦</span></span>
+                <span class="brand-tag">YBS Mezun & Kariyer Portalı</span>
               </div>
             </a>
 
-            <nav class="nav-tabs">
-              <a href="/home" class="nav-tab active">🏠 Ana Sayfa</a>
-              <a href="/users" class="nav-tab">👥 Mezunlar & Kullanıcılar</a>
-              <a href="/departments" class="nav-tab">🏛️ Bölümler</a>
-              <a href="/job-postings" class="nav-tab">💼 İlanlar</a>
-              <a href="/applications" class="nav-tab">📄 Başvurular</a>
-              <a href="/announcements" class="nav-tab">📢 Duyurular</a>
-              <a href="/about" class="nav-tab">ℹ️ Hakkında</a>
-              <a href="/api/swagger" target="_blank" class="nav-tab api-tab">⚡ Swagger API</a>
+            <!-- CENTER MINIMALIST NAV LINKS -->
+            <nav class="nav-links">
+              <a href="/home" class="nav-link active">Ana Sayfa</a>
+              <a href="/users" class="nav-link">Mezunlar</a>
+              <a href="/departments" class="nav-link">Bölümler</a>
+              <a href="/job-postings" class="nav-link">İlanlar</a>
+              <a href="/applications" class="nav-link">Başvurular</a>
+              <a href="/announcements" class="nav-link">Duyurular</a>
+              <a href="/about" class="nav-link">Hakkında</a>
             </nav>
+
+            <!-- RIGHT STANDOUT PILL CTA BUTTON -->
+            <div class="header-actions">
+              <a href="/api/swagger" target="_blank" class="header-cta-pill" title="Swagger OpenAPI Arayüzü">
+                Swagger API
+              </a>
+            </div>
           </div>
         </header>
 
-        <!-- HERO SECTION WITH HISTORIC BEYAZIT GATE -->
+        <!-- HERO SECTION WITH FULL-BLEED BACKGROUND VIDEO -->
         <section class="hero-section">
+          <!-- FULL-BLEED HIGH-PERFORMANCE VIDEO BACKGROUND -->
+          <div class="hero-video-wrapper">
+            <video 
+              id="heroGateVideo"
+              class="hero-bg-video"
+              autoplay
+              muted
+              loop
+              playsinline
+              webkit-playsinline
+              preload="metadata"
+              poster="/images/iu_tarihi_kapi.jpg"
+              onended="this.currentTime = 0; this.play();"
+              aria-label="İstanbul Üniversitesi Beyazıt Tarihi Ana Kapı Tanıtım Videosu">
+              <source src="/videos/main(1).mov" type="video/quicktime">
+              <source src="/videos/main.mov" type="video/quicktime">
+              <source src="/videos/main(1).mov" type="video/mp4">
+              <source src="/videos/main.mov" type="video/mp4">
+            </video>
+            <!-- Cinematic gradient overlay for maximum readability & vibrant visuals -->
+            <div class="hero-video-overlay"></div>
+          </div>
+
           <div class="hero-content">
-            <div>
+            <div class="hero-text">
               <div class="hero-badge">
                 🏛️ T.C. İSTANBUL ÜNİVERSİTESİ • 1453 • İKTİSAT FAKÜLTESİ
               </div>
@@ -614,19 +740,6 @@ const HomeView = {
                 <a href="/users" class="cta-btn" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
                   👥 Mezun Ağı (${totalUsers} Üye)
                 </a>
-              </div>
-            </div>
-
-            <!-- HISTORIC GATE SHOWCASE CARD -->
-            <div class="hero-gate-card">
-              <div class="gate-img-wrapper">
-                <img src="/images/iu_tarihi_kapi.jpg" alt="İstanbul Üniversitesi Beyazıt Tarihi Ana Kapı" class="gate-img">
-              </div>
-              <div class="gate-caption">
-                <div class="gate-title">Tarihi Beyazıt Ana Kapısı</div>
-                <p class="gate-info">
-                  1453'ten bugüne bilimin, araştırmanın ve geleceği inşa eden liderlerin yetiştiği simge Beyazıt Yerleşkesi.
-                </p>
               </div>
             </div>
           </div>
@@ -803,6 +916,53 @@ const HomeView = {
             © 2026 T.C. İstanbul Üniversitesi • Web Programlama Dersi MVC Mimarisi Projesi • Tüm Hakları Saklıdır.
           </div>
         </footer>
+
+        <!-- PERFORMANCE OPTIMIZATIONS FOR HERO VIDEO (SILENT BACKGROUND) -->
+        <script>
+          (function() {
+            const video = document.getElementById('heroGateVideo');
+            if (!video) return;
+
+            // Strictly mute video (zero audio connection)
+            video.muted = true;
+            video.volume = 0;
+
+            // 1. Resource & Battery Saver: Pause when scrolled offscreen, resume when visible
+            if ('IntersectionObserver' in window) {
+              const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                    if (video.paused) {
+                      video.play().catch(() => {});
+                    }
+                  } else {
+                    if (!video.paused) {
+                      video.pause();
+                    }
+                  }
+                });
+              }, { threshold: 0.15 });
+
+              observer.observe(video);
+            }
+
+            // 2. Fallback restart on ended (Loop guarantee for all mobile engines)
+            video.addEventListener('ended', function() {
+              video.currentTime = 0;
+              video.play().catch(() => {});
+            });
+
+            // 3. Autoplay safeguard (handles low-power mode or aggressive browser policies)
+            video.muted = true;
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {
+                video.muted = true;
+                video.play().catch(() => {});
+              });
+            }
+          })();
+        </script>
       </body>
       </html>
     `;
@@ -817,18 +977,22 @@ const HomeView = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Hakkında - İÜ YBS Mezun Takip Sistemi</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+          ${SharedHeader.getHeaderStyles()}
+
           body {
             font-family: 'Inter', system-ui, sans-serif;
             background: #070a12;
             color: #f8fafc;
-            padding: 3rem 1.5rem;
             margin: 0;
+            padding: 0;
             line-height: 1.6;
           }
+          .container {
+            max-width: 850px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+          }
           .box {
-            max-width: 750px;
-            margin: 2rem auto;
             background: #151d30;
             padding: 2.5rem;
             border-radius: 16px;
@@ -855,22 +1019,26 @@ const HomeView = {
         </style>
       </head>
       <body>
-        <div class="box">
-          <h1>🏛️ İÜ YBS Mezun Takip Sistemi</h1>
-          <p style="margin-top: 1rem;">
-            Bu sistem, <strong>İstanbul Üniversitesi İktisat Fakültesi Yönetim Bilişim Sistemleri Bölümü</strong> bünyesinde geliştirilen; mezunlar, öğrenciler ve akademisyenler arasındaki bağı güçlendirmeyi amaçlayan kapsamlı bir web uygulamasıdır.
-          </p>
-          <p style="margin-top: 1rem;">
-            <strong>Mimarî & Altyapı Özellikleri:</strong>
-          </p>
-          <ul style="color: #94a3b8; padding-left: 1.5rem; margin-top: 0.5rem; line-height: 1.8;">
-            <li>Modern Node.js & Express.js MVC (Model-View-Controller) Katmanlı Mimarisi</li>
-            <li>PostgreSQL 16 İlişkisel Veritabanı ve Docker Compose Konteyner Yapısı</li>
-            <li>Direct Rotalar ve İlişkisel Nested Rotalar (Bölüm -> İlanlar, İlan -> Başvurular, Kullanıcı -> Başvurular)</li>
-            <li>OpenAPI 3.0 & Swagger UI ile Tam REST API Dokümantasyonu</li>
-            <li>Kariyer İlanı Yayınlama, CV ile Başvuru ve Anlık Canlı Arama/Filtreleme</li>
-          </ul>
-          <a href="/home" class="btn">🏠 Ana Sayfaya Dön</a>
+        ${SharedHeader.renderHeader('about')}
+
+        <div class="container">
+          <div class="box">
+            <h1>🏛️ İÜ YBS Mezun Takip Sistemi</h1>
+            <p style="margin-top: 1rem;">
+              Bu sistem, <strong>İstanbul Üniversitesi İktisat Fakültesi Yönetim Bilişim Sistemleri Bölümü</strong> bünyesinde geliştirilen; mezunlar, öğrenciler ve akademisyenler arasındaki bağı güçlendirmeyi amaçlayan kapsamlı bir web uygulamasıdır.
+            </p>
+            <p style="margin-top: 1rem;">
+              <strong>Mimarî & Altyapı Özellikleri:</strong>
+            </p>
+            <ul style="color: #94a3b8; padding-left: 1.5rem; margin-top: 0.5rem; line-height: 1.8;">
+              <li>Modern Node.js & Express.js MVC (Model-View-Controller) Katmanlı Mimarisi</li>
+              <li>PostgreSQL 16 İlişkisel Veritabanı ve Docker Compose Konteyner Yapısı</li>
+              <li>Direct Rotalar ve İlişkisel Nested Rotalar (Bölüm -> İlanlar, İlan -> Başvurular, Kullanıcı -> Başvurular)</li>
+              <li>OpenAPI 3.0 & Swagger UI ile Tam REST API Dokümantasyonu</li>
+              <li>Kariyer İlanı Yayınlama, CV ile Başvuru ve Anlık Canlı Arama/Filtreleme</li>
+            </ul>
+            <a href="/home" class="btn">🏠 Ana Sayfaya Dön</a>
+          </div>
         </div>
       </body>
       </html>
