@@ -12,6 +12,7 @@
 - [Tech Stack](#-tech-stack)
 - [Database Design Documentation (ddd.md)](#-database-design-documentation-dddmd)
 - [Brand & Design Guidelines (brand.md)](#-brand--design-guidelines-brandmd)
+- [UI Design System (DESIGN.md)](#-ui-design-system-designmd)
 - [Database Migrations, Factories & Seeds](#-database-migrations-factories--seeds)
 - [MVC Architecture](#-mvc-architecture)
 - [Middleware & Guardian Architecture](#-middleware--guardian-architecture)
@@ -201,6 +202,17 @@ Visual identity, color palette, typography, logo monogram (`İÜ✦`), and UI la
 - 🎨 **Color System:** Deep Midnight (`#070a12`), İÜ Burgundy (`#800020`), İÜ Gold (`#d4af37`), Tech Cyan (`#38bdf8`), and CTA Coral (`#e86034`).
 - ✒️ **Typography:** `Cinzel` serif for institutional display titles and `Inter` sans-serif for clean UI readability.
 - 🧭 **Navigation & Layout:** Minimalist `72px` sticky glassmorphic header and high-contrast responsive dark-mode cards.
+
+---
+
+## 🌿 UI Design System (`DESIGN.md`)
+
+The web interface design system across every page is standardized and protected in **[`DESIGN.md`](./DESIGN.md)** (adopted from the Mintlify design specification) and enforced centrally via `backend/src/views/mintlifyTheme.js`:
+
+- 🎨 **Dual-Mode & Surface Tokens:** Crisp `#ffffff` light canvas (`--canvas`), `#f7f7f7` subtle surface (`--surface`), `#e5e5e5` 1px hairlines (`--hairline`), `#0a0a0a` black pill CTAs (`--primary`), and signature Mintlify green (`#00d4a4`, `--brand-green`) for accent CTAs and focus rings.
+- 🎬 **Atmospheric Hero + Video Preservation:** Full-bleed silent looping Beyazıt Gate campus video paired with Mintlify's `#1a3d4a → #2d5a4f` atmospheric scrim and floating `hero-product-mockup`.
+- ✒️ **Typography:** `Inter` across UI prose/headings paired with `Geist Mono` for inline tags, IDs, and API code blocks (`#1c1c1e`).
+- 🧩 **Consistent Page-by-Page Coverage:** Applied uniformly across `/home`, `/users`, `/departments`, `/job-postings`, `/applications`, `/announcements`, `/about`, and `/404` (`notFoundView.js`).
 
 ---
 
