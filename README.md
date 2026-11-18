@@ -11,6 +11,7 @@
 - [API Documentation & Swagger UI](#-api-documentation--swagger-ui)
 - [Tech Stack](#-tech-stack)
 - [Database Design Documentation (ddd.md)](#-database-design-documentation-dddmd)
+- [Brand & Design Guidelines (brand.md)](#-brand--design-guidelines-brandmd)
 - [Database Migrations, Factories & Seeds](#-database-migrations-factories--seeds)
 - [MVC Architecture](#-mvc-architecture)
 - [Middleware & Guardian Architecture](#-middleware--guardian-architecture)
@@ -189,6 +190,17 @@ Comprehensive database schema and relational entity specifications are documente
 - 🔒 **Integrity & Optimization:** Foreign key cascades, check constraints, 3NF normalization, and recommended database indexes.
 
 > *Note:* The application's CRUD models (`userModel.js`, `announcementModel.js`) are fully connected to PostgreSQL (`users` and `announcements` tables) matching the `ddd.md` specification.
+
+---
+
+## 🎨 Brand & Design Guidelines (`brand.md`)
+
+Visual identity, color palette, typography, logo monogram (`İÜ✦`), and UI layout guidelines are documented in **[`brand.md`](./brand.md)**:
+
+- 🏛️ **Institutional Identity:** Blending Istanbul University's 1453 heritage with modern MIS aesthetics.
+- 🎨 **Color System:** Deep Midnight (`#070a12`), İÜ Burgundy (`#800020`), İÜ Gold (`#d4af37`), Tech Cyan (`#38bdf8`), and CTA Coral (`#e86034`).
+- ✒️ **Typography:** `Cinzel` serif for institutional display titles and `Inter` sans-serif for clean UI readability.
+- 🧭 **Navigation & Layout:** Minimalist `72px` sticky glassmorphic header and high-contrast responsive dark-mode cards.
 
 ---
 
