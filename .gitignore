@@ -22,3 +22,7 @@ backend/logs
 # Operating System Files
 .DS_Store
 Thumbs.db
+
+# Large Media Files (>100MB GitHub limit)
+backend/src/public/videos/*.mov
+backend/src/public/videos/*.mp4
