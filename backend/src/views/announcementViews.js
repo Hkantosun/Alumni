@@ -1,5 +1,6 @@
 /**
  * Announcement View Layer - Responsible for generating HTML representations for Announcement Web Pages.
+ * Styled consistently with DESIGN.md (Mintlify Design System) via MintlifyTheme.
  * Full CRUD View Templates:
  *   1. Listing View (GET /announcements -> Read All)
  *   2. Detail View (GET /announcements/:id -> Read One)
@@ -9,32 +10,67 @@
  *   6. Deleted View (POST /announcements/:id/delete -> Delete Response)
  */
 
+const MintlifyTheme = require('./mintlifyTheme');
+const { escapeHtml } = MintlifyTheme;
+
+function renderStatusCard({ title, message, badgeText, badgeClass = 'badge-green' }) {
+  return `
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${escapeHtml(title)} — İÜ YBS</title>
+      <style>
+        ${MintlifyTheme.getBaseStyles()}
+      </style>
+    </head>
+    <body>
+      ${MintlifyTheme.renderHeader('announcements')}
+      <main class="page-main">
+        <div class="page-container" style="max-width: 560px; margin-top: 64px;">
+          <div class="card-base" style="text-align: center; padding: 36px;">
+            <span class="${badgeClass}" style="margin-bottom: 14px;">${escapeHtml(badgeText)}</span>
+            <h1 style="font-size: 24px; font-weight: 600; color: var(--ink); margin-bottom: 10px;">${escapeHtml(title)}</h1>
+            <p style="font-size: 15px; color: var(--steel); margin-bottom: 24px;">${message}</p>
+            <a href="/announcements" class="btn btn-primary">Duyuru Listesine Dön</a>
+          </div>
+        </div>
+      </main>
+      ${MintlifyTheme.renderFooter()}
+    </body>
+    </html>
+  `;
+}
+
 const AnnouncementViews = {
   /**
    * 1. READ ALL - Render Announcement Listing HTML View (GET /announcements)
    */
   renderAnnouncementListPage(announcements) {
+    const pinnedCount = announcements.filter(a => a.isPinned).length;
+
     const rows = announcements.length > 0
       ? announcements.map(a => `
           <tr>
-            <td><span class="id-badge">#${a.id}</span></td>
+            <td><span class="code-inline">#${a.id}</span></td>
             <td>
-              <strong>${a.title || '-'}</strong>
-              ${a.isPinned ? '<span class="pinned-badge">📌 Sabitlendi</span>' : ''}
+              <strong style="color: var(--ink); font-weight: 600;">${escapeHtml(a.title || '-')}</strong>
+              ${a.isPinned ? '<span class="badge-warn" style="margin-left: 8px;">📌 Sabitlendi</span>' : ''}
             </td>
-            <td><span class="category-badge">${a.category || 'Genel'}</span></td>
-            <td>${a.author || 'Sistem Yöneticisi'}</td>
-            <td>${new Date(a.createdAt).toLocaleDateString('tr-TR')}</td>
+            <td><span class="badge-tag">${escapeHtml(a.category || 'Genel')}</span></td>
+            <td style="color: var(--steel);">${escapeHtml(a.author || 'Sistem Yöneticisi')}</td>
+            <td style="color: var(--steel); font-size: 13px;">${a.createdAt ? new Date(a.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
             <td class="action-cells">
-              <a href="/announcements/${a.id}" class="btn btn-view">👁️ Detay</a>
-              <a href="/announcements/${a.id}/edit" class="btn btn-edit">✏️ Düzenle</a>
+              <a href="/announcements/${a.id}" class="btn btn-secondary btn-sm">Detay</a>
+              <a href="/announcements/${a.id}/edit" class="btn btn-warn btn-sm">Düzenle</a>
               <form action="/announcements/${a.id}/delete" method="POST" style="display:inline;" onsubmit="return confirm('Bu duyuruyu silmek istediğinizden emin misiniz?');">
-                <button type="submit" class="btn btn-delete">🗑️ Sil</button>
+                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
               </form>
             </td>
           </tr>
         `).join('')
-      : `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 2rem;">Henüz kayıtlı bir duyuru bulunmamaktadır. Yukarıdaki formu kullanarak ilk duyuruyu ekleyebilirsiniz.</td></tr>`;
+      : `<tr><td colspan="6" style="text-align: center; color: var(--steel); padding: 32px;">Henüz kayıtlı bir duyuru bulunmamaktadır. Yukarıdaki formu kullanarak ilk duyuruyu ekleyebilirsiniz.</td></tr>`;
 
     return `
       <!DOCTYPE html>
@@ -42,131 +78,130 @@ const AnnouncementViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>📢 Duyuru Yönetimi - Alumni System</title>
+        <title>Duyurular & Etkinlikler — İÜ YBS</title>
         <style>
-          :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --border: #334155;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+          ${MintlifyTheme.getBaseStyles()}
+          .ann-form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
           }
-          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
-          .container { max-width: 1050px; margin: 0 auto; }
-          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-          .nav-links { display: flex; gap: 1rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); }
-          .nav-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s; }
-          .nav-links a:hover, .nav-links a.active { color: var(--accent); }
-          h1 { color: #38bdf8; margin: 0; font-size: 1.8rem; }
-          .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-          .card h2 { margin-top: 0; color: #818cf8; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
-          .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-          .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-          .full-width { grid-column: span 3; }
-          label { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
-          input, select, textarea { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.65rem 0.8rem; border-radius: 6px; font-size: 0.95rem; font-family: inherit; }
-          textarea { resize: vertical; min-height: 80px; }
-          input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
-          .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-          .checkbox-group input { width: auto; cursor: pointer; }
-          .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
-          .btn-primary { background: var(--accent); color: #0f172a; }
-          .btn-primary:hover { background: var(--accent-hover); color: white; }
-          .btn-view { background: #334155; color: #38bdf8; }
-          .btn-view:hover { background: #475569; }
-          .btn-edit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-          .btn-edit:hover { background: rgba(245, 158, 11, 0.3); }
-          .btn-delete { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-          .btn-delete:hover { background: rgba(239, 68, 68, 0.3); }
-          table { width: 100%; border-collapse: collapse; margin-top: 1rem; text-align: left; }
-          th { background: #111827; padding: 12px; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
-          td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
-          .action-cells { display: flex; gap: 6px; align-items: center; }
-          .id-badge { background: #334155; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; }
-          .category-badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; }
-          .pinned-badge { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600; }
+          .full-width { grid-column: 1 / -1; }
+          .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .checkbox-group input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--brand-green-deep);
+            cursor: pointer;
+          }
+          @media (max-width: 820px) {
+            .ann-form-grid { grid-template-columns: 1fr; }
+          }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1>📢 Alumni Duyuru Sistemi</h1>
-            <span style="color: var(--muted);">Web MVC Announcement Model</span>
-          </div>
+        ${MintlifyTheme.renderHeader('announcements')}
 
-          <div class="nav-links">
-            <a href="/home">🏠 Ana Sayfa</a>
-            <a href="/users">👥 Kullanıcılar</a>
-            <a href="/departments">🏛️ Bölümler</a>
-            <a href="/job-postings">💼 İlanlar</a>
-            <a href="/applications">📄 Başvurular</a>
-            <a href="/announcements" class="active">📢 Duyurular</a>
-            <a href="/api/swagger" target="_blank">📚 Swagger API</a>
-          </div>
-
-          <!-- CREATE FORM (POST /announcements) -->
-          <div class="card">
-            <h2>➕ Yeni Duyuru Yayınla (Create Announcement)</h2>
-            <form action="/announcements" method="POST">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="title">Duyuru Başlığı</label>
-                  <input type="text" id="title" name="title" placeholder="ör. 2026 Mezunlar Buluşması Kayıtları Başladı" required>
-                </div>
-                <div class="form-group">
-                  <label for="category">Kategori</label>
-                  <select id="category" name="category">
-                    <option value="Genel">Genel</option>
-                    <option value="Etkinlik">Etkinlik</option>
-                    <option value="Kariyer & İş">Kariyer & İş</option>
-                    <option value="Akademik">Akademik</option>
-                    <option value="Burs & Destek">Burs & Destek</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="author">Yayınlayan</label>
-                  <input type="text" id="author" name="author" placeholder="ör. Mezunlar Derneği">
-                </div>
-                <div class="form-group full-width">
-                  <label for="content">Duyuru İçeriği</label>
-                  <textarea id="content" name="content" placeholder="Duyuru detaylarını buraya yazınız..." required></textarea>
-                </div>
+        <main class="page-main">
+          <div class="page-container">
+            <div class="page-header-block">
+              <div>
+                <span class="section-kicker"><span class="mint-dot"></span> GÜNDEM & ETKİNLİK</span>
+                <h1 class="page-title">Duyurular & Etkinlikler</h1>
+                <p class="page-subtitle">Bölüm duyurularını, kariyer günlerini ve mezun buluşmalarını yayınlayın ve yönetin.</p>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="checkbox-group">
-                  <input type="checkbox" id="isPinned" name="isPinned" value="true">
-                  <label for="isPinned" style="cursor: pointer; color: #fbbf24;">📌 Bu duyuruyu başa sabitle</label>
-                </div>
-                <button type="submit" class="btn btn-primary">📢 Duyuru Ekle</button>
-              </div>
-            </form>
-          </div>
+              <a href="/api/announcements" target="_blank" class="btn btn-secondary">JSON API ↗</a>
+            </div>
 
-          <!-- LISTING TABLE (GET /announcements) -->
-          <div class="card">
-            <h2>📋 Yayındaki Duyurular (${announcements.length} Duyuru)</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Başlık</th>
-                  <th>Kategori</th>
-                  <th>Yayınlayan</th>
-                  <th>Tarih</th>
-                  <th>İşlemler (CRUD)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows}
-              </tbody>
-            </table>
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="stat-card">
+                <div class="stat-label">Toplam Duyuru</div>
+                <div class="stat-value"><span class="mint-dot"></span> ${announcements.length}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Sabitlenenler</div>
+                <div class="stat-value">${pinnedCount}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">REST Endpoint</div>
+                <div class="stat-value" style="font-size: 14px; font-family: var(--font-mono); color: var(--brand-tag);">GET /api/announcements</div>
+              </div>
+            </div>
+
+            <!-- CREATE FORM (POST /announcements) -->
+            <section class="card-feature">
+              <div class="card-title-row">
+                <h2 class="card-heading">Yeni Duyuru Yayınla</h2>
+                <span class="code-inline">POST /announcements</span>
+              </div>
+              <form action="/announcements" method="POST">
+                <div class="ann-form-grid">
+                  <div class="form-group">
+                    <label for="title">Duyuru Başlığı</label>
+                    <input type="text" id="title" name="title" placeholder="ör. 2026 Mezunlar Buluşması Kayıtları Başladı" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <select id="category" name="category">
+                      <option value="Genel">Genel</option>
+                      <option value="Etkinlik">Etkinlik</option>
+                      <option value="Kariyer & İş">Kariyer & İş</option>
+                      <option value="Akademik">Akademik</option>
+                      <option value="Burs & Destek">Burs & Destek</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="author">Yayınlayan</label>
+                    <input type="text" id="author" name="author" placeholder="ör. Mezunlar Derneği">
+                  </div>
+                  <div class="form-group full-width">
+                    <label for="content">Duyuru İçeriği</label>
+                    <textarea id="content" name="content" placeholder="Duyuru detaylarını buraya yazınız..." required></textarea>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="isPinned" name="isPinned" value="true">
+                    <label for="isPinned" style="cursor: pointer; font-size: 14px; color: var(--charcoal); font-weight: 500;">Bu duyuruyu başa sabitle</label>
+                  </div>
+                  <button type="submit" class="btn btn-accent-green">Duyuruyu Yayınla</button>
+                </div>
+              </form>
+            </section>
+
+            <!-- LISTING TABLE (GET /announcements) -->
+            <section class="card-base">
+              <div class="card-title-row">
+                <h2 class="card-heading">Yayındaki Duyurular</h2>
+                <span class="badge-green">${announcements.length} Duyuru</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Başlık</th>
+                      <th>Kategori</th>
+                      <th>Yayınlayan</th>
+                      <th>Tarih</th>
+                      <th>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
-        </div>
+        </main>
+
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -182,38 +217,59 @@ const AnnouncementViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Duyuru Detayı - ${announcement.title}</title>
+        <title>${escapeHtml(announcement.title)} — İÜ YBS</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 650px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          h2 { color: #38bdf8; margin-top: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
-          .meta-info { display: flex; gap: 1.5rem; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
-          .content-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 1.25rem; font-size: 1rem; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap; margin-bottom: 2rem; }
-          .btn-group { display: flex; gap: 10px; }
-          a, button { text-decoration: none; padding: 0.65rem 1.2rem; border-radius: 6px; font-weight: 600; border: none; cursor: pointer; font-size: 0.9rem; }
-          .btn-back { background: #334155; color: white; }
-          .btn-edit { background: #f59e0b; color: white; }
-          .btn-delete { background: #ef4444; color: white; }
-          .category-badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; }
+          ${MintlifyTheme.getBaseStyles()}
+          .content-box {
+            background: var(--surface-soft);
+            border: 1px solid var(--hairline);
+            border-radius: var(--rounded-md);
+            padding: 20px;
+            font-size: 15px;
+            line-height: 1.65;
+            color: var(--charcoal);
+            white-space: pre-wrap;
+            margin: 20px 0 24px;
+          }
         </style>
       </head>
       <body>
-        <div class="card">
-          <h2>📢 ${announcement.title}</h2>
-          <div class="meta-info">
-            <span>🏷️ <span class="category-badge">${announcement.category || 'Genel'}</span></span>
-            <span>👤 ${announcement.author || 'Sistem Yöneticisi'}</span>
-            <span>📅 ${new Date(announcement.createdAt).toLocaleString('tr-TR')}</span>
+        ${MintlifyTheme.renderHeader('announcements')}
+        <main class="page-main">
+          <div class="page-container" style="max-width: 740px;">
+            <div style="margin-bottom: 18px;">
+              <a href="/announcements" class="btn btn-secondary btn-sm">← Duyurulara Dön</a>
+            </div>
+
+            <div class="card-base">
+              <div class="card-title-row">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <span class="code-inline">#${announcement.id}</span>
+                    <span class="badge-tag">${escapeHtml(announcement.category || 'Genel')}</span>
+                    ${announcement.isPinned ? '<span class="badge-warn">📌 Sabitlendi</span>' : ''}
+                  </div>
+                  <h1 style="font-size: 24px; font-weight: 600; color: var(--ink);">${escapeHtml(announcement.title)}</h1>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 18px; font-size: 13px; color: var(--steel); flex-wrap: wrap;">
+                <span>Yayınlayan: <strong style="color: var(--ink);">${escapeHtml(announcement.author || 'Sistem Yöneticisi')}</strong></span>
+                <span>Tarih: ${announcement.createdAt ? new Date(announcement.createdAt).toLocaleString('tr-TR') : '-'}</span>
+              </div>
+
+              <div class="content-box">${escapeHtml(announcement.content)}</div>
+
+              <div class="action-cells">
+                <a href="/announcements/${announcement.id}/edit" class="btn btn-primary">Düzenle</a>
+                <form action="/announcements/${announcement.id}/delete" method="POST" style="margin:0;" onsubmit="return confirm('Bu duyuruyu silmek istediğinizden emin misiniz?');">
+                  <button type="submit" class="btn btn-danger">Duyuruyu Sil</button>
+                </form>
+              </div>
+            </div>
           </div>
-          <div class="content-box">${announcement.content}</div>
-          <div class="btn-group">
-            <a href="/announcements" class="btn-back">← Duyurulara Dön</a>
-            <a href="/announcements/${announcement.id}/edit" class="btn-edit">✏️ Düzenle</a>
-            <form action="/announcements/${announcement.id}/delete" method="POST" style="margin:0;" onsubmit="return confirm('Bu duyuruyu silmek istediğinizden emin misiniz?');">
-              <button type="submit" class="btn-delete">🗑️ Sil</button>
-            </form>
-          </div>
-        </div>
+        </main>
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -229,60 +285,63 @@ const AnnouncementViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Duyuru Düzenle - ${announcement.title}</title>
+        <title>Duyuru Düzenle — ${escapeHtml(announcement.title)}</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          h2 { color: #f59e0b; margin-top: 0; font-size: 1.5rem; }
-          .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem; }
-          label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
-          input, select, textarea { background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 0.7rem; border-radius: 6px; font-size: 1rem; font-family: inherit; }
-          textarea { resize: vertical; min-height: 100px; }
-          input:focus, select:focus, textarea:focus { outline: none; border-color: #f59e0b; }
-          .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-          .checkbox-group input { width: auto; cursor: pointer; }
-          .btn-group { display: flex; gap: 10px; margin-top: 1.5rem; }
-          button, a { padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; text-align: center; }
-          .btn-save { background: #f59e0b; color: white; }
-          .btn-cancel { background: #334155; color: white; }
+          ${MintlifyTheme.getBaseStyles()}
+          .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+          .checkbox-group input { width: 16px; height: 16px; accent-color: var(--brand-green-deep); cursor: pointer; }
         </style>
       </head>
       <body>
-        <div class="card">
-          <h2>✏️ Duyuruyu Düzenle (#${announcement.id})</h2>
-          <form action="/announcements/${announcement.id}/update" method="POST">
-            <div class="form-group">
-              <label for="title">Duyuru Başlığı</label>
-              <input type="text" id="title" name="title" value="${announcement.title || ''}" required>
+        ${MintlifyTheme.renderHeader('announcements')}
+        <main class="page-main">
+          <div class="page-container" style="max-width: 680px;">
+            <div style="margin-bottom: 18px;">
+              <a href="/announcements" class="btn btn-secondary btn-sm">← İptal / Duyurulara Dön</a>
             </div>
-            <div class="form-group">
-              <label for="category">Kategori</label>
-              <select id="category" name="category">
-                <option value="Genel" ${announcement.category === 'Genel' ? 'selected' : ''}>Genel</option>
-                <option value="Etkinlik" ${announcement.category === 'Etkinlik' ? 'selected' : ''}>Etkinlik</option>
-                <option value="Kariyer & İş" ${announcement.category === 'Kariyer & İş' ? 'selected' : ''}>Kariyer & İş</option>
-                <option value="Akademik" ${announcement.category === 'Akademik' ? 'selected' : ''}>Akademik</option>
-                <option value="Burs & Destek" ${announcement.category === 'Burs & Destek' ? 'selected' : ''}>Burs & Destek</option>
-              </select>
+
+            <div class="card-base">
+              <div class="card-title-row">
+                <h1 class="card-heading">Duyuruyu Düzenle</h1>
+                <span class="code-inline">#${announcement.id}</span>
+              </div>
+
+              <form action="/announcements/${announcement.id}/update" method="POST">
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="title">Duyuru Başlığı</label>
+                  <input type="text" id="title" name="title" value="${escapeHtml(announcement.title || '')}" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="category">Kategori</label>
+                  <select id="category" name="category">
+                    <option value="Genel" ${announcement.category === 'Genel' ? 'selected' : ''}>Genel</option>
+                    <option value="Etkinlik" ${announcement.category === 'Etkinlik' ? 'selected' : ''}>Etkinlik</option>
+                    <option value="Kariyer & İş" ${announcement.category === 'Kariyer & İş' ? 'selected' : ''}>Kariyer & İş</option>
+                    <option value="Akademik" ${announcement.category === 'Akademik' ? 'selected' : ''}>Akademik</option>
+                    <option value="Burs & Destek" ${announcement.category === 'Burs & Destek' ? 'selected' : ''}>Burs & Destek</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="author">Yayınlayan</label>
+                  <input type="text" id="author" name="author" value="${escapeHtml(announcement.author || '')}">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="content">Duyuru İçeriği</label>
+                  <textarea id="content" name="content" required>${escapeHtml(announcement.content || '')}</textarea>
+                </div>
+                <div class="checkbox-group">
+                  <input type="checkbox" id="isPinned" name="isPinned" value="true" ${announcement.isPinned ? 'checked' : ''}>
+                  <label for="isPinned" style="cursor: pointer; font-size: 14px; font-weight: 500;">Bu duyuruyu başa sabitle</label>
+                </div>
+                <div class="action-cells">
+                  <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                  <a href="/announcements" class="btn btn-secondary">İptal</a>
+                </div>
+              </form>
             </div>
-            <div class="form-group">
-              <label for="author">Yayınlayan</label>
-              <input type="text" id="author" name="author" value="${announcement.author || ''}">
-            </div>
-            <div class="form-group">
-              <label for="content">Duyuru İçeriği</label>
-              <textarea id="content" name="content" required>${announcement.content || ''}</textarea>
-            </div>
-            <div class="checkbox-group">
-              <input type="checkbox" id="isPinned" name="isPinned" value="true" ${announcement.isPinned ? 'checked' : ''}>
-              <label for="isPinned" style="cursor: pointer; color: #fbbf24;">📌 Bu duyuruyu başa sabitle</label>
-            </div>
-            <div class="btn-group">
-              <button type="submit" class="btn-save">Değişiklikleri Kaydet</button>
-              <a href="/announcements" class="btn-cancel">İptal</a>
-            </div>
-          </form>
-        </div>
+          </div>
+        </main>
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -292,93 +351,36 @@ const AnnouncementViews = {
    * 4. CREATE RESPONSE - Render Created View (POST /announcements)
    */
   renderAnnouncementCreatedPage(newAnnouncement) {
-    return `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Duyuru Yayınlandı</title>
-        <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-          .card { background: #1e293b; border: 1px solid #334155; padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          .icon { font-size: 3rem; margin-bottom: 1rem; }
-          h2 { color: #38bdf8; margin-top: 0; }
-          p { color: #cbd5e1; margin-bottom: 1.5rem; }
-          a { background: #6366f1; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-block; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="icon">📢</div>
-          <h2>Duyuru Başarıyla Yayınlandı!</h2>
-          <p><strong>"${newAnnouncement.title}"</strong> duyurusu listeye eklendi.</p>
-          <a href="/announcements">Duyuru Listesine Dön</a>
-        </div>
-      </body>
-      </html>
-    `;
+    return renderStatusCard({
+      title: 'Duyuru Başarıyla Yayınlandı',
+      message: `<strong>"${escapeHtml(newAnnouncement.title)}"</strong> duyurusu listeye eklendi.`,
+      badgeText: 'Yayınlandı',
+      badgeClass: 'badge-green'
+    });
   },
 
   /**
    * 5. UPDATE RESPONSE - Render Updated View (POST /announcements/:id/update)
    */
   renderAnnouncementUpdatedPage(updatedAnnouncement) {
-    return `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Duyuru Güncellendi</title>
-        <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-          .card { background: #1e293b; border: 1px solid #334155; padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          .icon { font-size: 3rem; margin-bottom: 1rem; }
-          h2 { color: #f59e0b; margin-top: 0; }
-          p { color: #cbd5e1; margin-bottom: 1.5rem; }
-          a { background: #6366f1; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-block; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="icon">✏️</div>
-          <h2>Duyuru Güncellendi!</h2>
-          <p><strong>"${updatedAnnouncement.title}"</strong> duyurusu güncellendi.</p>
-          <a href="/announcements">Duyuru Listesine Dön</a>
-        </div>
-      </body>
-      </html>
-    `;
+    return renderStatusCard({
+      title: 'Duyuru Güncellendi',
+      message: `<strong>"${escapeHtml(updatedAnnouncement.title)}"</strong> duyurusu güncellendi.`,
+      badgeText: 'Güncellendi',
+      badgeClass: 'badge-warn'
+    });
   },
 
   /**
    * 6. DELETE RESPONSE - Render Deleted View (POST /announcements/:id/delete)
    */
   renderAnnouncementDeletedPage(deletedAnnouncement) {
-    return `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Duyuru Silindi</title>
-        <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-          .card { background: #1e293b; border: 1px solid #334155; padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          .icon { font-size: 3rem; margin-bottom: 1rem; }
-          h2 { color: #ef4444; margin-top: 0; }
-          p { color: #cbd5e1; margin-bottom: 1.5rem; }
-          a { background: #6366f1; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-block; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="icon">🗑️</div>
-          <h2>Duyuru Silindi!</h2>
-          <p>ID'si #${deletedAnnouncement.id} olan <strong>"${deletedAnnouncement.title}"</strong> duyurusu sistemden kaldırıldı.</p>
-          <a href="/announcements">Duyuru Listesine Dön</a>
-        </div>
-      </body>
-      </html>
-    `;
+    return renderStatusCard({
+      title: 'Duyuru Silindi',
+      message: `ID'si <span class="code-inline">#${deletedAnnouncement.id}</span> olan <strong>"${escapeHtml(deletedAnnouncement.title)}"</strong> duyurusu sistemden kaldırıldı.`,
+      badgeText: 'Silindi',
+      badgeClass: 'badge-error'
+    });
   }
 };
 

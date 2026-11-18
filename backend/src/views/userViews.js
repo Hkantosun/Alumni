@@ -1,5 +1,6 @@
 /**
  * User View Layer - Responsible for generating HTML representations for User Web Pages.
+ * Styled consistently with DESIGN.md (Mintlify Design System) via MintlifyTheme.
  * Full CRUD View Templates:
  *   1. Listing View (GET /users -> Read All)
  *   2. Detail View (GET /users/:id -> Read One)
@@ -9,29 +10,69 @@
  *   6. Deleted View (POST /users/:id/delete -> Delete Response)
  */
 
+const MintlifyTheme = require('./mintlifyTheme');
+const { escapeHtml } = MintlifyTheme;
+
+function renderStatusCard({ title, message, badgeText, badgeClass = 'badge-green', backHref = '/users', backLabel = 'Mezun Listesine Dön' }) {
+  return `
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${escapeHtml(title)} — İÜ YBS</title>
+      <style>
+        ${MintlifyTheme.getBaseStyles()}
+      </style>
+    </head>
+    <body>
+      ${MintlifyTheme.renderHeader('users')}
+      <main class="page-main">
+        <div class="page-container" style="max-width: 560px; margin-top: 64px;">
+          <div class="card-base" style="text-align: center; padding: 36px;">
+            <span class="${badgeClass}" style="margin-bottom: 14px;">${escapeHtml(badgeText)}</span>
+            <h1 style="font-size: 24px; font-weight: 600; color: var(--ink); margin-bottom: 10px;">${escapeHtml(title)}</h1>
+            <p style="font-size: 15px; color: var(--steel); margin-bottom: 24px;">${message}</p>
+            <a href="${backHref}" class="btn btn-primary">${escapeHtml(backLabel)}</a>
+          </div>
+        </div>
+      </main>
+      ${MintlifyTheme.renderFooter()}
+    </body>
+    </html>
+  `;
+}
+
 const UserViews = {
   /**
    * 1. READ ALL - Render User Listing HTML View (GET /users)
    */
   renderUserListPage(users) {
+    const alumniCount = users.filter(u => (u.role || '').toLowerCase() === 'alumni').length;
+    const studentCount = users.filter(u => (u.role || '').toLowerCase() === 'student').length;
+    const staffCount = users.filter(u => {
+      const r = (u.role || '').toLowerCase();
+      return r === 'academic_staff' || r === 'academic staff' || r === 'admin';
+    }).length;
+
     const userRows = users.length > 0
       ? users.map(u => `
           <tr>
-            <td><span class="id-badge">#${u.id}</span></td>
-            <td><strong>${u.name || '-'}</strong></td>
-            <td>${u.email || '-'}</td>
-            <td><span class="role-badge">${u.role || u.department || 'Alumni'}</span></td>
-            <td>${new Date(u.createdAt).toLocaleDateString('tr-TR')}</td>
+            <td><span class="code-inline">#${u.id}</span></td>
+            <td><strong style="color: var(--ink); font-weight: 600;">${escapeHtml(u.name || '-')}</strong></td>
+            <td style="color: var(--steel);">${escapeHtml(u.email || '-')}</td>
+            <td><span class="badge-tag">${escapeHtml(u.role || u.department || 'Alumni')}</span></td>
+            <td style="color: var(--steel); font-size: 13px;">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
             <td class="action-cells">
-              <a href="/users/${u.id}" class="btn btn-view">👁️ Detay</a>
-              <a href="/users/${u.id}/edit" class="btn btn-edit">✏️ Düzenle</a>
+              <a href="/users/${u.id}" class="btn btn-secondary btn-sm">Detay</a>
+              <a href="/users/${u.id}/edit" class="btn btn-warn btn-sm">Düzenle</a>
               <form action="/users/${u.id}/delete" method="POST" style="display:inline;" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?');">
-                <button type="submit" class="btn btn-delete">🗑️ Sil</button>
+                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
               </form>
             </td>
           </tr>
         `).join('')
-      : `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 2rem;">Henüz kullanıcı bulunmamaktadır. Aşağıdaki formu kullanarak yeni bir kullanıcı oluşturabilirsiniz.</td></tr>`;
+      : `<tr><td colspan="6" style="text-align: center; color: var(--steel); padding: 32px;">Henüz kullanıcı bulunmamaktadır. Aşağıdaki formu kullanarak yeni bir kullanıcı oluşturabilirsiniz.</td></tr>`;
 
     return `
       <!DOCTYPE html>
@@ -39,109 +80,108 @@ const UserViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🎓 Alumni System - Kullanıcı CRUD Yönetimi</title>
+        <title>Mezunlar & Kullanıcılar — İÜ YBS</title>
         <style>
-          :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --border: #334155;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+          ${MintlifyTheme.getBaseStyles()}
+          .user-create-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 14px;
+            align-items: end;
           }
-          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
-          .container { max-width: 1000px; margin: 0 auto; }
-          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-          h1 { color: #818cf8; margin: 0; font-size: 1.8rem; }
-          .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-          .card h2 { margin-top: 0; color: #38bdf8; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
-          .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end; }
-          .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-          label { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
-          input, select { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.65rem 0.8rem; border-radius: 6px; font-size: 0.95rem; }
-          input:focus, select:focus { outline: none; border-color: var(--accent); }
-          .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0.5rem 0.9rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
-          .btn-primary { background: var(--accent); color: white; }
-          .btn-primary:hover { background: var(--accent-hover); }
-          .btn-view { background: #334155; color: #38bdf8; }
-          .btn-view:hover { background: #475569; }
-          .btn-edit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-          .btn-edit:hover { background: rgba(245, 158, 11, 0.3); }
-          .btn-delete { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-          .btn-delete:hover { background: rgba(239, 68, 68, 0.3); }
-          table { width: 100%; border-collapse: collapse; margin-top: 1rem; text-align: left; }
-          th { background: #111827; padding: 12px; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
-          td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
-          .action-cells { display: flex; gap: 6px; align-items: center; }
-          .id-badge { background: #334155; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; }
-          .role-badge { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 2px 10px; border-radius: 9999px; font-size: 0.8rem; }
+          @media (max-width: 900px) {
+            .user-create-grid { grid-template-columns: 1fr; }
+          }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1>🎓 Alumni Tracking System</h1>
-            <span style="color: var(--muted);">Web MVC CRUD View</span>
-          </div>
+        ${MintlifyTheme.renderHeader('users')}
 
-          <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap;">
-            <a href="/home" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏠 Ana Sayfa</a>
-            <a href="/users" style="color: var(--accent); text-decoration: none; font-weight: 600;">👥 Kullanıcılar</a>
-            <a href="/departments" style="color: var(--muted); text-decoration: none; font-weight: 600;">🏛️ Bölümler</a>
-            <a href="/job-postings" style="color: var(--muted); text-decoration: none; font-weight: 600;">💼 İlanlar</a>
-            <a href="/applications" style="color: var(--muted); text-decoration: none; font-weight: 600;">📄 Başvurular</a>
-            <a href="/announcements" style="color: var(--muted); text-decoration: none; font-weight: 600;">📢 Duyurular</a>
-            <a href="/api/swagger" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 600;">📚 Swagger API</a>
-          </div>
+        <main class="page-main">
+          <div class="page-container">
+            <div class="page-header-block">
+              <div>
+                <span class="section-kicker"><span class="mint-dot"></span> TOPLULUK DİZİNİ</span>
+                <h1 class="page-title">Mezunlar & Kullanıcılar</h1>
+                <p class="page-subtitle">Mezunları, aktif öğrencileri ve akademik kadroyu tek merkezden görüntüleyin ve yönetin.</p>
+              </div>
+              <a href="/api/users" target="_blank" class="btn btn-secondary">JSON API ↗</a>
+            </div>
 
-          <!-- CREATE FORM (POST /users) -->
-          <div class="card">
-            <h2>➕ Yeni Kullanıcı Oluştur (Create Action)</h2>
-            <form action="/users" method="POST" class="form-grid">
-              <div class="form-group">
-                <label for="name">Ad Soyad</label>
-                <input type="text" id="name" name="name" placeholder="ör. Ahmet Yılmaz" required>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-label">Toplam Kayıt</div>
+                <div class="stat-value"><span class="mint-dot"></span> ${users.length}</div>
               </div>
-              <div class="form-group">
-                <label for="email">E-posta</label>
-                <input type="email" id="email" name="email" placeholder="ör. ahmet@example.com" required>
+              <div class="stat-card">
+                <div class="stat-label">Mezunlar</div>
+                <div class="stat-value">${alumniCount}</div>
               </div>
-              <div class="form-group">
-                <label for="role">Rol / Durum</label>
-                <select id="role" name="role">
-                  <option value="Alumni">Mezun (Alumni)</option>
-                  <option value="Student">Öğrenci (Student)</option>
-                  <option value="Academic Staff">Akademik Personel</option>
-                </select>
+              <div class="stat-card">
+                <div class="stat-label">Öğrenciler</div>
+                <div class="stat-value">${studentCount}</div>
               </div>
-              <button type="submit" class="btn btn-primary">Kullanıcı Ekle</button>
-            </form>
-          </div>
+              <div class="stat-card">
+                <div class="stat-label">Akademik & Yönetim</div>
+                <div class="stat-value">${staffCount}</div>
+              </div>
+            </div>
 
-          <!-- LISTING TABLE (GET /users) -->
-          <div class="card">
-            <h2>📋 Mezun & Kullanıcı Listesi (Read All - ${users.length} Kayıt)</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Ad Soyad</th>
-                  <th>E-posta</th>
-                  <th>Rol</th>
-                  <th>Kayıt Tarihi</th>
-                  <th>İşlemler (CRUD)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${userRows}
-              </tbody>
-            </table>
+            <!-- CREATE FORM (POST /users) -->
+            <section class="card-feature">
+              <div class="card-title-row">
+                <h2 class="card-heading">Yeni Kullanıcı Oluştur</h2>
+                <span class="code-inline">POST /users</span>
+              </div>
+              <form action="/users" method="POST" class="user-create-grid">
+                <div class="form-group">
+                  <label for="name">Ad Soyad</label>
+                  <input type="text" id="name" name="name" placeholder="ör. Ahmet Yılmaz" required>
+                </div>
+                <div class="form-group">
+                  <label for="email">E-posta</label>
+                  <input type="email" id="email" name="email" placeholder="ör. ahmet@example.com" required>
+                </div>
+                <div class="form-group">
+                  <label for="role">Rol / Durum</label>
+                  <select id="role" name="role">
+                    <option value="Alumni">Mezun (Alumni)</option>
+                    <option value="Student">Öğrenci (Student)</option>
+                    <option value="Academic Staff">Akademik Personel</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-accent-green">Kullanıcı Ekle</button>
+              </form>
+            </section>
+
+            <!-- LISTING TABLE (GET /users) -->
+            <section class="card-base">
+              <div class="card-title-row">
+                <h2 class="card-heading">Kayıtlı Kullanıcı Listesi</h2>
+                <span class="badge-green">${users.length} Kayıt</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Ad Soyad</th>
+                      <th>E-posta</th>
+                      <th>Rol</th>
+                      <th>Kayıt Tarihi</th>
+                      <th>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${userRows}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
-        </div>
+        </main>
+
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -157,54 +197,69 @@ const UserViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kullanıcı Detayı - ${user.name}</title>
+        <title>${escapeHtml(user.name || 'Kullanıcı #' + user.id)} — İÜ YBS</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 550px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          h2 { color: #38bdf8; margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
-          .info-group { margin: 1.2rem 0; padding-bottom: 0.8rem; border-bottom: 1px solid #334155; }
-          .label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
-          .val { font-size: 1.1rem; color: #f8fafc; margin-top: 4px; }
-          .btn-group { display: flex; gap: 10px; margin-top: 2rem; }
-          a, button { text-decoration: none; padding: 0.65rem 1.2rem; border-radius: 6px; font-weight: 600; border: none; cursor: pointer; font-size: 0.9rem; }
-          .btn-back { background: #334155; color: white; }
-          .btn-edit { background: #f59e0b; color: white; }
-          .btn-delete { background: #ef4444; color: white; }
+          ${MintlifyTheme.getBaseStyles()}
         </style>
       </head>
       <body>
-        <div class="card">
-          <h2>👤 ${user.name || 'Kullanıcı #' + user.id}</h2>
-          <div class="info-group">
-            <div class="label">KULLANICI ID</div>
-            <div class="val">#${user.id}</div>
+        ${MintlifyTheme.renderHeader('users')}
+        <main class="page-main">
+          <div class="page-container" style="max-width: 700px;">
+            <div style="margin-bottom: 18px;">
+              <a href="/users" class="btn btn-secondary btn-sm">← Listeye Dön</a>
+            </div>
+
+            <div class="card-base">
+              <div class="card-title-row">
+                <div>
+                  <span class="code-inline">#${user.id}</span>
+                  <h1 style="font-size: 24px; font-weight: 600; color: var(--ink); margin-top: 8px;">${escapeHtml(user.name || 'Kullanıcı #' + user.id)}</h1>
+                </div>
+                <span class="badge-tag">${escapeHtml(user.role || user.department || 'Alumni')}</span>
+              </div>
+
+              <div class="table-wrap" style="margin-bottom: 24px;">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td style="width: 180px; color: var(--steel); font-weight: 500;">Kullanıcı ID</td>
+                      <td><span class="code-inline">#${user.id}</span></td>
+                    </tr>
+                    <tr>
+                      <td style="color: var(--steel); font-weight: 500;">E-posta Adresi</td>
+                      <td>${escapeHtml(user.email || 'Belirtilmemiş')}</td>
+                    </tr>
+                    <tr>
+                      <td style="color: var(--steel); font-weight: 500;">Rol / Bölüm</td>
+                      <td><span class="badge-tag">${escapeHtml(user.role || user.department || 'Alumni')}</span></td>
+                    </tr>
+                    <tr>
+                      <td style="color: var(--steel); font-weight: 500;">Kayıt Tarihi</td>
+                      <td>${user.createdAt ? new Date(user.createdAt).toLocaleString('tr-TR') : '-'}</td>
+                    </tr>
+                    ${user.updatedAt ? `
+                    <tr>
+                      <td style="color: var(--steel); font-weight: 500;">Son Güncelleme</td>
+                      <td>${new Date(user.updatedAt).toLocaleString('tr-TR')}</td>
+                    </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="action-cells">
+                <a href="/users/${user.id}/edit" class="btn btn-primary">Düzenle</a>
+                <a href="/users/${user.id}/applications" class="btn btn-nested">Başvuruları Gör (Nested)</a>
+                <a href="/users/${user.id}/job-postings" class="btn btn-secondary">Paylaşılan İlanlar</a>
+                <form action="/users/${user.id}/delete" method="POST" style="margin:0;" onsubmit="return confirm('Silmek istediğinizden emin misiniz?');">
+                  <button type="submit" class="btn btn-danger">Kullanıcıyı Sil</button>
+                </form>
+              </div>
+            </div>
           </div>
-          <div class="info-group">
-            <div class="label">E-POSTA ADRESİ</div>
-            <div class="val">${user.email || 'Belirtilmemiş'}</div>
-          </div>
-          <div class="info-group">
-            <div class="label">ROL / BÖLÜM</div>
-            <div class="val">${user.role || user.department || 'Alumni'}</div>
-          </div>
-          <div class="info-group">
-            <div class="label">KAYIT TARİHİ</div>
-            <div class="val">${new Date(user.createdAt).toLocaleString('tr-TR')}</div>
-          </div>
-          ${user.updatedAt ? `
-          <div class="info-group">
-            <div class="label">SON GÜNCELLEME</div>
-            <div class="val">${new Date(user.updatedAt).toLocaleString('tr-TR')}</div>
-          </div>
-          ` : ''}
-          <div class="btn-group">
-            <a href="/users" class="btn-back">← Listeye Dön</a>
-            <a href="/users/${user.id}/edit" class="btn-edit">✏️ Düzenle</a>
-            <form action="/users/${user.id}/delete" method="POST" style="margin:0;" onsubmit="return confirm('Silmek istediğinizden emin misiniz?');">
-              <button type="submit" class="btn-delete">🗑️ Sil</button>
-            </form>
-          </div>
-        </div>
+        </main>
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -220,47 +275,51 @@ const UserViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kullanıcı Düzenle - ${user.name}</title>
+        <title>Kullanıcı Düzenle — ${escapeHtml(user.name)}</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          h2 { color: #f59e0b; margin-top: 0; font-size: 1.5rem; }
-          .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem; }
-          label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
-          input, select { background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 0.7rem; border-radius: 6px; font-size: 1rem; }
-          input:focus, select:focus { outline: none; border-color: #f59e0b; }
-          .btn-group { display: flex; gap: 10px; margin-top: 1.5rem; }
-          button, a { padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; text-align: center; }
-          .btn-save { background: #f59e0b; color: white; }
-          .btn-cancel { background: #334155; color: white; }
+          ${MintlifyTheme.getBaseStyles()}
         </style>
       </head>
       <body>
-        <div class="card">
-          <h2>✏️ Kullanıcı Düzenle (#${user.id})</h2>
-          <form action="/users/${user.id}/update" method="POST">
-            <div class="form-group">
-              <label for="name">Ad Soyad</label>
-              <input type="text" id="name" name="name" value="${user.name || ''}" required>
+        ${MintlifyTheme.renderHeader('users')}
+        <main class="page-main">
+          <div class="page-container" style="max-width: 620px;">
+            <div style="margin-bottom: 18px;">
+              <a href="/users" class="btn btn-secondary btn-sm">← İptal / Listeye Dön</a>
             </div>
-            <div class="form-group">
-              <label for="email">E-posta Adresi</label>
-              <input type="email" id="email" name="email" value="${user.email || ''}" required>
+
+            <div class="card-base">
+              <div class="card-title-row">
+                <h1 class="card-heading">Kullanıcı Düzenle</h1>
+                <span class="code-inline">#${user.id}</span>
+              </div>
+
+              <form action="/users/${user.id}/update" method="POST">
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="name">Ad Soyad</label>
+                  <input type="text" id="name" name="name" value="${escapeHtml(user.name || '')}" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="email">E-posta Adresi</label>
+                  <input type="email" id="email" name="email" value="${escapeHtml(user.email || '')}" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                  <label for="role">Rol / Durum</label>
+                  <select id="role" name="role">
+                    <option value="Alumni" ${(user.role || '').toLowerCase() === 'alumni' ? 'selected' : ''}>Mezun (Alumni)</option>
+                    <option value="Student" ${(user.role || '').toLowerCase() === 'student' ? 'selected' : ''}>Öğrenci (Student)</option>
+                    <option value="Academic Staff" ${(user.role || '').toLowerCase().includes('academic') ? 'selected' : ''}>Akademik Personel</option>
+                  </select>
+                </div>
+                <div class="action-cells">
+                  <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                  <a href="/users" class="btn btn-secondary">İptal</a>
+                </div>
+              </form>
             </div>
-            <div class="form-group">
-              <label for="role">Rol / Durum</label>
-              <select id="role" name="role">
-                <option value="Alumni" ${user.role === 'Alumni' ? 'selected' : ''}>Mezun (Alumni)</option>
-                <option value="Student" ${user.role === 'Student' ? 'selected' : ''}>Öğrenci (Student)</option>
-                <option value="Academic Staff" ${user.role === 'Academic Staff' ? 'selected' : ''}>Akademik Personel</option>
-              </select>
-            </div>
-            <div class="btn-group">
-              <button type="submit" class="btn-save">Değişiklikleri Kaydet</button>
-              <a href="/users" class="btn-cancel">İptal</a>
-            </div>
-          </form>
-        </div>
+          </div>
+        </main>
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -270,93 +329,36 @@ const UserViews = {
    * 4. CREATE RESPONSE - Render Created View (POST /users)
    */
   renderUserCreatedPage(newUser) {
-    return `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Kullanıcı Oluşturuldu</title>
-        <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-          .card { background: #1e293b; border: 1px solid #334155; padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          .icon { font-size: 3rem; margin-bottom: 1rem; }
-          h2 { color: #10b981; margin-top: 0; }
-          p { color: #cbd5e1; margin-bottom: 1.5rem; }
-          a { background: #6366f1; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-block; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="icon">✅</div>
-          <h2>Kullanıcı Başarıyla Oluşturuldu!</h2>
-          <p><strong>${newUser.name}</strong> (${newUser.email}) sisteme eklendi.</p>
-          <a href="/users">Mezun Listesine Dön</a>
-        </div>
-      </body>
-      </html>
-    `;
+    return renderStatusCard({
+      title: 'Kullanıcı Başarıyla Oluşturuldu',
+      message: `<strong>${escapeHtml(newUser.name)}</strong> (${escapeHtml(newUser.email)}) sisteme eklendi.`,
+      badgeText: 'Kayıt Oluşturuldu',
+      badgeClass: 'badge-green'
+    });
   },
 
   /**
    * 5. UPDATE RESPONSE - Render Updated View (POST /users/:id/update)
    */
   renderUserUpdatedPage(updatedUser) {
-    return `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Kullanıcı Güncellendi</title>
-        <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-          .card { background: #1e293b; border: 1px solid #334155; padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          .icon { font-size: 3rem; margin-bottom: 1rem; }
-          h2 { color: #f59e0b; margin-top: 0; }
-          p { color: #cbd5e1; margin-bottom: 1.5rem; }
-          a { background: #6366f1; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-block; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="icon">✏️</div>
-          <h2>Kullanıcı Bilgileri Güncellendi!</h2>
-          <p><strong>${updatedUser.name}</strong> bilgileri başarıyla kaydedildi.</p>
-          <a href="/users">Mezun Listesine Dön</a>
-        </div>
-      </body>
-      </html>
-    `;
+    return renderStatusCard({
+      title: 'Kullanıcı Bilgileri Güncellendi',
+      message: `<strong>${escapeHtml(updatedUser.name)}</strong> bilgileri başarıyla kaydedildi.`,
+      badgeText: 'Güncellendi',
+      badgeClass: 'badge-warn'
+    });
   },
 
   /**
    * 6. DELETE RESPONSE - Render Deleted View (POST /users/:id/delete)
    */
   renderUserDeletedPage(deletedUser) {
-    return `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8">
-        <title>Kullanıcı Silindi</title>
-        <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-          .card { background: #1e293b; border: 1px solid #334155; padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-          .icon { font-size: 3rem; margin-bottom: 1rem; }
-          h2 { color: #ef4444; margin-top: 0; }
-          p { color: #cbd5e1; margin-bottom: 1.5rem; }
-          a { background: #6366f1; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-block; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="icon">🗑️</div>
-          <h2>Kullanıcı Silindi!</h2>
-          <p>ID'si #${deletedUser.id} olan <strong>${deletedUser.name}</strong> kaydı sistemden kaldırıldı.</p>
-          <a href="/users">Mezun Listesine Dön</a>
-        </div>
-      </body>
-      </html>
-    `;
+    return renderStatusCard({
+      title: 'Kullanıcı Silindi',
+      message: `ID'si <span class="code-inline">#${deletedUser.id}</span> olan <strong>${escapeHtml(deletedUser.name)}</strong> kaydı sistemden kaldırıldı.`,
+      badgeText: 'Silindi',
+      badgeClass: 'badge-error'
+    });
   }
 };
 

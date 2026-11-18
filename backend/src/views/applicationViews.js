@@ -1,5 +1,6 @@
 /**
  * Application View Layer - Responsible for generating HTML representations for Application Web Pages.
+ * Styled consistently with DESIGN.md (Mintlify Design System) via MintlifyTheme.
  * Supports:
  *   - Direct Route: GET /applications
  *   - Nested Route: GET /job-postings/:jobPostingId/applications
@@ -8,284 +9,49 @@
  *   - Edit Form: GET /applications/:id/edit
  */
 
-function getSharedStyles() {
-  return `
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-      :root {
-        --bg: #0b0f19;
-        --surface: #111827;
-        --card-bg: #1e293b;
-        --card-bg-hover: #243247;
-        --accent: #38bdf8;
-        --accent-hover: #0284c7;
-        --accent-glow: rgba(56, 189, 248, 0.2);
-        --purple: #a855f7;
-        --purple-glow: rgba(168, 85, 247, 0.2);
-        --success: #10b981;
-        --success-glow: rgba(16, 185, 129, 0.2);
-        --warning: #f59e0b;
-        --warning-glow: rgba(245, 158, 11, 0.2);
-        --danger: #ef4444;
-        --danger-glow: rgba(239, 68, 68, 0.2);
-        --text: #f8fafc;
-        --muted: #94a3b8;
-        --border: #334155;
-      }
-      * { box-sizing: border-box; }
-      body {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        background-color: var(--bg);
-        color: var(--text);
-        margin: 0;
-        padding: 2rem 1rem;
-        line-height: 1.5;
-      }
-      .container { max-width: 1200px; margin: 0 auto; }
-      .nav-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--surface);
-        padding: 1rem 1.5rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--border);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        flex-wrap: wrap;
-        gap: 1rem;
-      }
-      .nav-brand {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        font-weight: 800;
-        font-size: 1.25rem;
-        background: linear-gradient(135deg, #38bdf8, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-decoration: none;
-      }
-      .nav-links {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-      }
-      .nav-links a {
-        color: var(--muted);
-        text-decoration: none;
-        padding: 0.5rem 0.85rem;
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-      }
-      .nav-links a:hover {
-        background: var(--card-bg);
-        color: var(--text);
-      }
-      .nav-links a.active {
-        background: rgba(56, 189, 248, 0.15);
-        color: var(--accent);
-        border: 1px solid rgba(56, 189, 248, 0.3);
-      }
-      .card {
-        background-color: var(--card-bg);
-        border-radius: 14px;
-        padding: 1.75rem;
-        border: 1px solid var(--border);
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      }
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-      .stat-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.2rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-      }
-      .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
-      .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--text); }
-      .route-info {
-        background: rgba(56, 189, 248, 0.08);
-        border-left: 4px solid var(--accent);
-        padding: 1rem 1.25rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-        font-size: 0.95rem;
-        line-height: 1.6;
-      }
-      .nested-banner {
-        background: rgba(168, 85, 247, 0.12);
-        border-left: 4px solid var(--purple);
-      }
-      .filter-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
-        flex-wrap: wrap;
-      }
-      .search-input {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 0.65rem 1rem;
-        color: var(--text);
-        font-size: 0.9rem;
-        flex: 1;
-        min-width: 260px;
-      }
-      .search-input:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-glow);
-      }
-      table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-      th, td { text-align: left; padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
-      th { background-color: var(--surface); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
-      tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
-      .id-badge { background: #334155; padding: 0.2rem 0.55rem; border-radius: 6px; font-size: 0.8rem; color: #cbd5e1; font-family: monospace; }
-      .status-badge {
-        padding: 0.3rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: capitalize;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-      }
-      .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-      .status-under_review { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-      .status-accepted { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-      .status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-      .status-withdrawn { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.45rem 0.8rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        transition: all 0.2s ease;
-      }
-      .btn:hover { transform: translateY(-1px); }
-      .btn-view { background: #334155; color: #f8fafc; }
-      .btn-view:hover { background: #475569; }
-      .btn-edit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-      .btn-edit:hover { background: rgba(245, 158, 11, 0.25); }
-      .btn-delete { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-      .btn-delete:hover { background: rgba(239, 68, 68, 0.25); }
-      .btn-primary { background: var(--accent); color: #0b0f19; font-weight: 700; }
-      .btn-primary:hover { background: var(--accent-hover); }
-      .btn-back { background: var(--surface); color: var(--muted); border: 1px solid var(--border); margin-bottom: 1.5rem; }
-      .btn-back:hover { color: var(--text); border-color: var(--muted); }
-      .action-cells { display: flex; gap: 0.4rem; align-items: center; }
-      .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-top: 1rem; }
-      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-      .form-group label { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
-      .form-group input, .form-group select, .form-group textarea {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 0.7rem 0.9rem;
-        color: var(--text);
-        font-size: 0.92rem;
-        font-family: inherit;
-        transition: border-color 0.2s;
-      }
-      .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-glow);
-      }
-      .btn-submit {
-        background: linear-gradient(135deg, #38bdf8, #2563eb);
-        color: #ffffff;
-        font-weight: 700;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        cursor: pointer;
-        border: none;
-        margin-top: 1.25rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.95rem;
-        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
-        transition: all 0.2s ease;
-      }
-      .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
-      }
-    </style>
-  `;
-}
+const MintlifyTheme = require('./mintlifyTheme');
+const { escapeHtml } = MintlifyTheme;
 
-function renderNavbar(activeItem = 'applications') {
-  return `
-    <header class="nav-bar">
-      <a href="/home" class="nav-brand">🎓 Alumni Tracking System</a>
-      <nav class="nav-links">
-        <a href="/home" class="${activeItem === 'home' ? 'active' : ''}">🏠 Ana Sayfa</a>
-        <a href="/users" class="${activeItem === 'users' ? 'active' : ''}">👥 Kullanıcılar</a>
-        <a href="/departments" class="${activeItem === 'departments' ? 'active' : ''}">🏛️ Bölümler</a>
-        <a href="/job-postings" class="${activeItem === 'job-postings' ? 'active' : ''}">💼 İlanlar</a>
-        <a href="/applications" class="${activeItem === 'applications' ? 'active' : ''}">📄 Başvurular</a>
-        <a href="/announcements" class="${activeItem === 'announcements' ? 'active' : ''}">📢 Duyurular</a>
-        <a href="/api/swagger" target="_blank" style="color: #38bdf8; font-weight: 700;">⚡ Swagger API</a>
-      </nav>
-    </header>
-  `;
+function getStatusBadge(status) {
+  if (status === 'accepted') return { cls: 'badge-green', label: 'Kabul Edildi (accepted)' };
+  if (status === 'rejected') return { cls: 'badge-error', label: 'Reddedildi (rejected)' };
+  if (status === 'under_review') return { cls: 'badge-tag', label: 'İnceleniyor (under_review)' };
+  if (status === 'withdrawn') return { cls: 'badge-type', label: 'Geri Çekildi (withdrawn)' };
+  return { cls: 'badge-warn', label: 'Beklemede (pending)' };
 }
 
 const ApplicationViews = {
   /**
    * 1. READ ALL - Render Application List Page (Direct & Nested)
    */
-  renderApplicationListPage(applications, { currentJob = null, currentUser = null, jobPostings = [], users = [], isNested = false } = {}) {
-    let headerTitle = '📄 İş & Staj Başvuruları';
+  renderApplicationListPage(applications, { currentJob = null, currentUser = null, jobPostings = [], users = [] } = {}) {
+    let headerTitle = 'İş & Staj Başvuruları';
     let bannerHtml = `
       <div class="route-info">
-        💡 <strong>Direct Rota:</strong> <code>GET /applications</code> (Sistemdeki tüm iş/staj başvuruları listelenir).<br>
-        • Belirli bir ilana ait başvuruları görmek için <strong>Nested Rota:</strong> <code>GET /job-postings/:jobPostingId/applications</code><br>
-        • Belirli bir adayın başvurularını görmek için <strong>Nested Rota:</strong> <code>GET /users/:userId/applications</code>
+        <strong>Direct & Nested Rota Yapısı:</strong><br>
+        • <strong>Direct Rota:</strong> <span class="code-inline">GET /applications</span> (Sistemdeki tüm iş/staj başvuruları)<br>
+        • <strong>Nested Rotalar:</strong> <span class="code-inline">GET /job-postings/:jobPostingId/applications</span> veya <span class="code-inline">GET /users/:userId/applications</span>
       </div>
     `;
 
     if (currentJob) {
-      headerTitle = `📄 "${currentJob.title}" İlanına Yapılan Başvurular`;
+      headerTitle = `"${escapeHtml(currentJob.title)}" Başvuruları`;
       bannerHtml = `
         <div class="route-info nested-banner">
-          🔗 <strong>Nested Route Aktif:</strong> <code>GET /job-postings/${currentJob.id}/applications</code><br>
-          Şu anda yalnızca <strong>${currentJob.company}</strong> bünyesindeki <strong>${currentJob.title}</strong> ilanına ait başvurular listelenmektedir.
-          <a href="/job-postings/${currentJob.id}" style="color: #c084fc; margin-left: 0.75rem; text-decoration: underline; font-weight: 600;">İlanı Görüntüle</a>
-          <a href="/applications" style="color: #38bdf8; margin-left: 0.75rem; text-decoration: underline; font-weight: 600;">Tüm Başvuruları Gör (Direct Route)</a>
+          <strong>Nested Route Aktif:</strong> <span class="code-inline">GET /job-postings/${currentJob.id}/applications</span><br>
+          Şu anda yalnızca <strong>${escapeHtml(currentJob.company)}</strong> bünyesindeki <strong>${escapeHtml(currentJob.title)}</strong> ilanına ait başvurular listelenmektedir.
+          <a href="/job-postings/${currentJob.id}" style="color: var(--ink); margin-left: 10px; font-weight: 600;">İlanı Görüntüle</a>
+          <a href="/applications" style="color: var(--brand-tag); margin-left: 10px; font-weight: 600;">Tüm Başvurular (Direct) →</a>
         </div>
       `;
     } else if (currentUser) {
       const applicantName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.email;
-      headerTitle = `📄 ${applicantName} Tarafından Yapılan Başvurular`;
+      headerTitle = `${escapeHtml(applicantName)} Başvuruları`;
       bannerHtml = `
         <div class="route-info nested-banner">
-          🔗 <strong>Nested Route Aktif:</strong> <code>GET /users/${currentUser.id}/applications</code><br>
-          Şu anda yalnızca <strong>${applicantName}</strong> (${currentUser.role}) adayının yaptığı başvurular listelenmektedir.
-          <a href="/applications" style="color: #38bdf8; margin-left: 1rem; text-decoration: underline; font-weight: 600;">Tüm Başvuruları Gör (Direct Route)</a>
+          <strong>Nested Route Aktif:</strong> <span class="code-inline">GET /users/${currentUser.id}/applications</span><br>
+          Şu anda yalnızca <strong>${escapeHtml(applicantName)}</strong> (${escapeHtml(currentUser.role)}) adayının yaptığı başvurular listelenmektedir.
+          <a href="/applications" style="color: var(--brand-tag); margin-left: 10px; font-weight: 600;">Tüm Başvurular (Direct) →</a>
         </div>
       `;
     }
@@ -298,63 +64,59 @@ const ApplicationViews = {
 
     const rows = applications.length > 0
       ? applications.map(a => {
-          let statusBadgeClass = 'status-pending';
-          let statusIcon = '⏳';
-          if (a.status === 'accepted') { statusBadgeClass = 'status-accepted'; statusIcon = '✅'; }
-          if (a.status === 'rejected') { statusBadgeClass = 'status-rejected'; statusIcon = '❌'; }
-          if (a.status === 'under_review') { statusBadgeClass = 'status-under_review'; statusIcon = '🔍'; }
-          if (a.status === 'withdrawn') { statusBadgeClass = 'status-withdrawn'; statusIcon = '⚪'; }
+          const badge = getStatusBadge(a.status);
+          const searchAttr = escapeHtml(`${a.jobTitle || ''} ${a.jobCompany || ''} ${a.applicantName || ''} ${a.applicantEmail || ''} ${a.status}`.toLowerCase());
 
           return `
-            <tr class="app-row" data-search="${((a.jobTitle || '') + ' ' + (a.jobCompany || '') + ' ' + (a.applicantName || '') + ' ' + (a.applicantEmail || '') + ' ' + a.status).toLowerCase()}">
-              <td><span class="id-badge">#${a.id}</span></td>
+            <tr class="app-row" data-search="${searchAttr}">
+              <td><span class="code-inline">#${a.id}</span></td>
               <td>
-                <a href="/job-postings/${a.job_posting_id}" style="color: #f8fafc; font-weight: 700; text-decoration: none;">
-                  💼 ${a.jobTitle || 'İlan #' + a.job_posting_id}
+                <a href="/job-postings/${a.job_posting_id}" style="color: var(--ink); font-weight: 600; text-decoration: none;">
+                  ${escapeHtml(a.jobTitle || 'İlan #' + a.job_posting_id)}
                 </a>
-                <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.2rem;">
-                  🏢 ${a.jobCompany || '-'}
+                <div style="font-size: 13px; color: var(--steel); margin-top: 2px;">
+                  ${escapeHtml(a.jobCompany || '-')}
                 </div>
               </td>
               <td>
-                <a href="/users/${a.applicant_user_id}" style="color: #38bdf8; text-decoration: none; font-weight: 600;">
-                  👤 ${a.applicantName || 'Aday #' + a.applicant_user_id}
+                <a href="/users/${a.applicant_user_id}" style="color: var(--ink); font-weight: 500; text-decoration: none;">
+                  ${escapeHtml(a.applicantName || 'Aday #' + a.applicant_user_id)}
                 </a>
-                <div style="font-size: 0.8rem; color: #64748b;">${a.applicantEmail || ''}</div>
+                <div style="font-size: 12px; color: var(--steel);">${escapeHtml(a.applicantEmail || '')}</div>
               </td>
               <td>
-                <span class="status-badge ${statusBadgeClass}">${statusIcon} ${a.status}</span>
+                <span class="${badge.cls}">${escapeHtml(a.status)}</span>
               </td>
               <td>
                 ${a.resume_url
-                  ? `<a href="${a.resume_url}" target="_blank" class="btn" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 0.3rem 0.6rem;">📄 CV Aç</a>`
-                  : '<span style="color: #64748b; font-size: 0.85rem;">CV Yok</span>'
+                  ? `<a href="${escapeHtml(a.resume_url)}" target="_blank" style="color: var(--brand-annotate); font-weight: 500; text-decoration: none; font-size: 13px;">CV Aç ↗</a>`
+                  : '<span style="color: var(--stone); font-size: 13px;">CV Yok</span>'
                 }
               </td>
-              <td style="color: #94a3b8; font-size: 0.85rem;">
-                ${new Date(a.created_at).toLocaleDateString('tr-TR')}
+              <td style="color: var(--steel); font-size: 13px;">
+                ${a.created_at ? new Date(a.created_at).toLocaleDateString('tr-TR') : '-'}
               </td>
               <td class="action-cells">
-                <a href="/applications/${a.id}" class="btn btn-view" title="Detay">👁️ Detay</a>
-                <a href="/applications/${a.id}/edit" class="btn btn-edit" title="Durum Güncelle">✏️ Durum</a>
+                <a href="/applications/${a.id}" class="btn btn-secondary btn-sm">Detay</a>
+                <a href="/applications/${a.id}/edit" class="btn btn-warn btn-sm">Durum</a>
                 <form action="/applications/${a.id}/delete" method="POST" style="display:inline;" onsubmit="return confirm('Bu başvuruyu silmek istediğinizden emin misiniz?');">
-                  <button type="submit" class="btn btn-delete" title="Sil">🗑️</button>
+                  <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                 </form>
               </td>
             </tr>
           `;
         }).join('')
-      : `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 3rem;">Henüz kayıtlı başvuru bulunmamaktadır.</td></tr>`;
+      : `<tr><td colspan="7" style="text-align: center; color: var(--steel); padding: 36px;">Henüz kayıtlı başvuru bulunmamaktadır.</td></tr>`;
 
     const jobOptions = jobPostings.map(j => `
       <option value="${j.id}" ${currentJob && currentJob.id === j.id ? 'selected' : ''}>
-        #${j.id} - ${j.title} (${j.company})
+        #${j.id} - ${escapeHtml(j.title)} (${escapeHtml(j.company)})
       </option>
     `).join('');
 
     const userOptions = users.map(u => {
       const displayName = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
-      return `<option value="${u.id}" ${currentUser && currentUser.id === u.id ? 'selected' : ''}>#${u.id} - ${displayName} (${u.role})</option>`;
+      return `<option value="${u.id}" ${currentUser && currentUser.id === u.id ? 'selected' : ''}>#${u.id} - ${escapeHtml(displayName)} (${escapeHtml(u.role)})</option>`;
     }).join('');
 
     return `
@@ -363,118 +125,135 @@ const ApplicationViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${headerTitle} - Alumni System</title>
-        ${getSharedStyles()}
+        <title>${headerTitle} — İÜ YBS</title>
+        <style>
+          ${MintlifyTheme.getBaseStyles()}
+        </style>
       </head>
       <body>
-        <div class="container">
-          ${renderNavbar('applications')}
+        ${MintlifyTheme.renderHeader('applications')}
 
-          <!-- Stats Grid -->
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="stat-label">Toplam Başvuru</span>
-              <span class="stat-value" style="color: #38bdf8;">${totalCount}</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Beklemede (Pending)</span>
-              <span class="stat-value" style="color: #fbbf24;">${pendingCount}</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">İnceleniyor (Review)</span>
-              <span class="stat-value" style="color: #818cf8;">${reviewCount}</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Kabul Edildi (Accepted)</span>
-              <span class="stat-value" style="color: #34d399;">${acceptedCount}</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Reddedildi (Rejected)</span>
-              <span class="stat-value" style="color: #f87171;">${rejectedCount}</span>
-            </div>
-          </div>
-
-          <main class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-              <h1 style="margin: 0; font-size: 1.75rem;">${headerTitle}</h1>
-              <a href="#new-app-form" class="btn btn-primary" style="padding: 0.6rem 1.1rem;">➕ Yeni Başvuru Gönder</a>
+        <main class="page-main">
+          <div class="page-container">
+            <div class="page-header-block">
+              <div>
+                <span class="section-kicker"><span class="mint-dot"></span> BAŞVURU SÜREÇLERİ</span>
+                <h1 class="page-title">${headerTitle}</h1>
+                <p class="page-subtitle">Aday başvurularını, CV bağlantılarını ve değerlendirme statülerini tek ekrandan takip edin.</p>
+              </div>
+              <div class="action-cells">
+                <a href="#new-app-form" class="btn btn-accent-green">+ Yeni Başvuru Gönder</a>
+                <a href="/api/applications" target="_blank" class="btn btn-secondary">JSON API ↗</a>
+              </div>
             </div>
 
-            ${bannerHtml}
-
-            <!-- Live Filter / Search Bar -->
-            <div class="filter-bar">
-              <input type="text" id="appSearch" class="search-input" placeholder="🔍 İlan adı, şirket, aday adı veya durum ara..." oninput="filterApplications()">
-              <span id="resultCount" style="color: var(--muted); font-size: 0.85rem;">${totalCount} başvuru gösteriliyor</span>
+            <!-- Stats Grid (5 columns) -->
+            <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+              <div class="stat-card">
+                <div class="stat-label">Toplam</div>
+                <div class="stat-value"><span class="mint-dot"></span> ${totalCount}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Beklemede</div>
+                <div class="stat-value">${pendingCount}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">İnceleniyor</div>
+                <div class="stat-value">${reviewCount}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Kabul Edildi</div>
+                <div class="stat-value" style="color: var(--brand-annotate);">${acceptedCount}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Reddedildi</div>
+                <div class="stat-value" style="color: var(--brand-error);">${rejectedCount}</div>
+              </div>
             </div>
 
-            <div style="overflow-x: auto;">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Başvurulan İlan & Şirket</th>
-                    <th>Aday (Applicant)</th>
-                    <th>Durum</th>
-                    <th>Özgeçmiş</th>
-                    <th>Başvuru Tarihi</th>
-                    <th>İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody id="appTableBody">
-                  ${rows}
-                </tbody>
-              </table>
-            </div>
-          </main>
+            <section class="card-base">
+              ${bannerHtml}
 
-          <!-- CREATE APPLICATION FORM -->
-          <section class="card" id="new-app-form">
-            <h2 style="margin-top: 0; font-size: 1.4rem;">➕ Yeni Başvuru Kaydı Oluştur</h2>
-            <p style="color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-              Öğrenci veya mezun olarak mevcut bir iş ilanına doğrudan başvurun veya yönetici olarak başvuru kaydı ekleyin.
-            </p>
-
-            <form action="/applications" method="POST">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="job_posting_id">Başvurulacak İlan *</label>
-                  ${jobPostings.length > 0
-                    ? `<select id="job_posting_id" name="job_posting_id" required>${jobOptions}</select>`
-                    : `<input type="number" id="job_posting_id" name="job_posting_id" value="${currentJob ? currentJob.id : '1'}" required>`
-                  }
-                </div>
-
-                <div class="form-group">
-                  <label for="applicant_user_id">Başvuran Aday / Kullanıcı *</label>
-                  ${users.length > 0
-                    ? `<select id="applicant_user_id" name="applicant_user_id" required>${userOptions}</select>`
-                    : `<input type="number" id="applicant_user_id" name="applicant_user_id" value="${currentUser ? currentUser.id : '12'}" required>`
-                  }
-                </div>
-
-                <div class="form-group" style="grid-column: 1 / -1;">
-                  <label for="resume_url">Özgeçmiş (CV) / Portfolyo Linki</label>
-                  <input type="text" id="resume_url" name="resume_url" placeholder="https://linkedin.com/in/... veya https://drive.google.com/..." required>
-                </div>
-
-                <div class="form-group" style="grid-column: 1 / -1;">
-                  <label for="cover_letter">Ön Yazı / Niyet Mektubu (Cover Letter)</label>
-                  <textarea id="cover_letter" name="cover_letter" rows="4" placeholder="Neden bu pozisyona başvurduğunuzu ve yetkinliklerinizi özetleyen bir mesaj yazın..."></textarea>
-                </div>
+              <div class="filter-bar">
+                <input type="text" id="appSearch" class="search-input" placeholder="İlan adı, şirket, aday adı veya durum ara..." oninput="filterApplications()">
+                <span id="resultCount" class="badge-type">${totalCount} başvuru gösteriliyor</span>
               </div>
 
-              <button type="submit" class="btn-submit">📨 Başvuruyu Gönder</button>
-            </form>
-          </section>
-        </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Başvurulan İlan & Şirket</th>
+                      <th>Aday</th>
+                      <th>Durum</th>
+                      <th>Özgeçmiş</th>
+                      <th>Tarih</th>
+                      <th>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody id="appTableBody">
+                    ${rows}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- CREATE APPLICATION FORM -->
+            <section class="card-feature" id="new-app-form">
+              <div class="card-title-row">
+                <div>
+                  <h2 class="card-heading">Yeni Başvuru Kaydı Oluştur</h2>
+                  <p style="color: var(--steel); font-size: 13px; margin-top: 4px;">
+                    Öğrenci veya mezun olarak mevcut bir iş ilanına doğrudan başvurun.
+                  </p>
+                </div>
+                <span class="code-inline">POST /applications</span>
+              </div>
+
+              <form action="/applications" method="POST">
+                <div class="form-grid" style="margin-bottom: 18px;">
+                  <div class="form-group">
+                    <label for="job_posting_id">Başvurulacak İlan *</label>
+                    ${jobPostings.length > 0
+                      ? `<select id="job_posting_id" name="job_posting_id" required>${jobOptions}</select>`
+                      : `<input type="number" id="job_posting_id" name="job_posting_id" value="${currentJob ? currentJob.id : '1'}" required>`
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label for="applicant_user_id">Başvuran Aday / Kullanıcı *</label>
+                    ${users.length > 0
+                      ? `<select id="applicant_user_id" name="applicant_user_id" required>${userOptions}</select>`
+                      : `<input type="number" id="applicant_user_id" name="applicant_user_id" value="${currentUser ? currentUser.id : '12'}" required>`
+                    }
+                  </div>
+
+                  <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="resume_url">Özgeçmiş (CV) / Portfolyo Linki</label>
+                    <input type="text" id="resume_url" name="resume_url" placeholder="https://linkedin.com/in/... veya https://drive.google.com/..." required>
+                  </div>
+
+                  <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="cover_letter">Ön Yazı / Niyet Mektubu (Cover Letter)</label>
+                    <textarea id="cover_letter" name="cover_letter" rows="4" placeholder="Neden bu pozisyona başvurduğunuzu ve yetkinliklerinizi özetleyen bir mesaj yazın..."></textarea>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Başvuruyu Gönder</button>
+              </form>
+            </section>
+          </div>
+        </main>
+
+        ${MintlifyTheme.renderFooter()}
 
         <script>
           function filterApplications() {
             const query = document.getElementById('appSearch').value.toLowerCase();
             const rows = document.querySelectorAll('.app-row');
             let visible = 0;
-            rows.forEach(r => {
+            rows.forEach(function(r) {
               const text = r.getAttribute('data-search') || '';
               if (text.includes(query)) {
                 r.style.display = '';
@@ -495,12 +274,7 @@ const ApplicationViews = {
    * 2. READ ONE - Render Application Detail Page
    */
   renderApplicationDetailPage(app) {
-    let statusBadgeClass = 'status-pending';
-    let statusIcon = '⏳';
-    if (app.status === 'accepted') { statusBadgeClass = 'status-accepted'; statusIcon = '✅'; }
-    if (app.status === 'rejected') { statusBadgeClass = 'status-rejected'; statusIcon = '❌'; }
-    if (app.status === 'under_review') { statusBadgeClass = 'status-under_review'; statusIcon = '🔍'; }
-    if (app.status === 'withdrawn') { statusBadgeClass = 'status-withdrawn'; statusIcon = '⚪'; }
+    const badge = getStatusBadge(app.status);
 
     return `
       <!DOCTYPE html>
@@ -508,133 +282,122 @@ const ApplicationViews = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Başvuru Detayı #${app.id} - Alumni System</title>
-        ${getSharedStyles()}
+        <title>Başvuru Detayı #${app.id} — İÜ YBS</title>
+        <style>
+          ${MintlifyTheme.getBaseStyles()}
+          .meta-two-col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+          }
+          .meta-box {
+            background-color: var(--surface-soft);
+            border: 1px solid var(--hairline);
+            border-radius: var(--rounded-md);
+            padding: 18px;
+          }
+          @media (max-width: 700px) {
+            .meta-two-col { grid-template-columns: 1fr; }
+          }
+        </style>
       </head>
       <body>
-        <div class="container" style="max-width: 900px;">
-          ${renderNavbar('applications')}
+        ${MintlifyTheme.renderHeader('applications')}
 
-          <a href="/applications" class="btn btn-back">⬅️ Tüm Başvurulara Dön (Direct Route)</a>
+        <main class="page-main">
+          <div class="page-container" style="max-width: 920px;">
+            <div style="margin-bottom: 18px;">
+              <a href="/applications" class="btn btn-secondary btn-sm">← Tüm Başvurulara Dön</a>
+            </div>
 
-          <!-- Main Application Detail Card -->
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
-              <div>
-                <span class="id-badge" style="font-size: 0.9rem;">Başvuru #${app.id}</span>
-                <span class="status-badge ${statusBadgeClass}" style="margin-left: 0.5rem; font-size: 0.9rem; padding: 0.35rem 0.85rem;">
-                  ${statusIcon} ${app.status}
+            <div class="card-base">
+              <div class="card-title-row">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <span class="code-inline">Başvuru #${app.id}</span>
+                    <span class="${badge.cls}">${escapeHtml(badge.label)}</span>
+                  </div>
+                  <h1 class="page-title">${escapeHtml(app.jobTitle || 'İlan #' + app.job_posting_id)}</h1>
+                  <div style="font-size: 16px; color: var(--steel); font-weight: 500; margin-top: 4px;">
+                    ${escapeHtml(app.jobCompany || '-')}
+                  </div>
+                </div>
+
+                <div class="action-cells">
+                  <a href="/applications/${app.id}/edit" class="btn btn-warn btn-sm">Düzenle</a>
+                  <form action="/applications/${app.id}/delete" method="POST" style="display:inline;" onsubmit="return confirm('Bu başvuruyu silmek istediğinizden emin misiniz?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                  </form>
+                </div>
+              </div>
+
+              <div class="meta-two-col">
+                <div class="meta-box">
+                  <div style="font-size: 11px; color: var(--steel); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px;">İlan Bilgileri</div>
+                  <div style="font-weight: 600; font-size: 15px; color: var(--ink);">${escapeHtml(app.jobTitle || 'İlan #' + app.job_posting_id)}</div>
+                  <div style="color: var(--steel); font-size: 13px; margin-top: 3px;">${escapeHtml(app.jobCompany || '-')}</div>
+                  <div class="action-cells" style="margin-top: 14px;">
+                    <a href="/job-postings/${app.job_posting_id}" class="btn btn-secondary btn-sm">İlanı Görüntüle</a>
+                    <a href="/job-postings/${app.job_posting_id}/applications" class="btn btn-nested btn-sm">İlan Başvuruları</a>
+                  </div>
+                </div>
+
+                <div class="meta-box">
+                  <div style="font-size: 11px; color: var(--steel); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px;">Aday Bilgileri</div>
+                  <div style="font-weight: 600; font-size: 15px; color: var(--ink);">${escapeHtml(app.applicantName || 'Aday #' + app.applicant_user_id)}</div>
+                  <div style="color: var(--steel); font-size: 13px; margin-top: 3px;">${escapeHtml(app.applicantEmail || 'Belirtilmedi')}</div>
+                  <div class="action-cells" style="margin-top: 14px;">
+                    <a href="/users/${app.applicant_user_id}" class="btn btn-secondary btn-sm">Aday Profili</a>
+                    <a href="/users/${app.applicant_user_id}/applications" class="btn btn-nested btn-sm">Diğer Başvuruları</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="route-info" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <strong>Özgeçmiş (CV) / Portfolyo:</strong>
+                  ${app.resume_url
+                    ? `<a href="${escapeHtml(app.resume_url)}" target="_blank" style="color: var(--brand-annotate); margin-left: 6px; font-weight: 500; word-break: break-all;">${escapeHtml(app.resume_url)} ↗</a>`
+                    : '<span style="color: var(--stone); margin-left: 6px;">Eklenmemiş</span>'
+                  }
+                </div>
+                <span style="font-size: 13px; color: var(--steel);">
+                  Tarih: <strong>${app.created_at ? new Date(app.created_at).toLocaleString('tr-TR') : '-'}</strong>
                 </span>
-                <h1 style="margin: 0.75rem 0 0 0; font-size: 1.8rem;">
-                  ${app.jobTitle || 'İlan #' + app.job_posting_id}
-                </h1>
-                <div style="font-size: 1.1rem; color: #38bdf8; font-weight: 600; margin-top: 0.3rem;">
-                  🏢 ${app.jobCompany || '-'}
+              </div>
+
+              <h2 class="card-heading" style="margin: 20px 0 10px;">Ön Yazı (Cover Letter)</h2>
+              <div style="background: var(--surface-soft); padding: 18px; border-radius: var(--rounded-md); border: 1px solid var(--hairline); color: var(--charcoal); line-height: 1.7; white-space: pre-wrap; font-size: 14px;">
+                ${app.cover_letter ? escapeHtml(app.cover_letter) : '<span style="color: var(--stone); font-style: italic;">Aday herhangi bir ön yazı eklemedi.</span>'}
+              </div>
+
+              <div class="card-feature" style="margin-top: 24px; margin-bottom: 0;">
+                <h3 style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 12px;">Hızlı Durum Güncelle</h3>
+                <div class="action-cells">
+                  <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
+                    <input type="hidden" name="status" value="pending">
+                    <button type="submit" class="btn btn-warn btn-sm">Beklemeye Al (pending)</button>
+                  </form>
+                  <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
+                    <input type="hidden" name="status" value="under_review">
+                    <button type="submit" class="btn btn-nested btn-sm">İncelemeye Al (under_review)</button>
+                  </form>
+                  <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
+                    <input type="hidden" name="status" value="accepted">
+                    <button type="submit" class="btn btn-accent-green btn-sm">Kabul Et (accepted)</button>
+                  </form>
+                  <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
+                    <input type="hidden" name="status" value="rejected">
+                    <button type="submit" class="btn btn-danger btn-sm">Reddet (rejected)</button>
+                  </form>
                 </div>
-              </div>
-
-              <div style="display: flex; gap: 0.5rem;">
-                <a href="/applications/${app.id}/edit" class="btn btn-edit">✏️ Düzenle</a>
-                <form action="/applications/${app.id}/delete" method="POST" style="display:inline;" onsubmit="return confirm('Bu başvuruyu silmek istediğinizden emin misiniz?');">
-                  <button type="submit" class="btn btn-delete">🗑️ Sil</button>
-                </form>
-              </div>
-            </div>
-
-            <!-- Two-Column Meta Info -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.75rem;">
-              <!-- Job Box -->
-              <div style="background: var(--surface); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border);">
-                <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">
-                  💼 İlan Bilgileri
-                </div>
-                <div style="font-weight: 700; font-size: 1.05rem;">${app.jobTitle}</div>
-                <div style="color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem;">🏢 ${app.jobCompany}</div>
-                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                  <a href="/job-postings/${app.job_posting_id}" class="btn btn-view" style="font-size: 0.8rem;">
-                    👁️ İlanı Görüntüle
-                  </a>
-                  <a href="/job-postings/${app.job_posting_id}/applications" class="btn" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.8rem;">
-                    🔗 İlan Başvuruları (Nested)
-                  </a>
-                </div>
-              </div>
-
-              <!-- Applicant Box -->
-              <div style="background: var(--surface); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border);">
-                <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">
-                  👤 Aday Bilgileri
-                </div>
-                <div style="font-weight: 700; font-size: 1.05rem;">${app.applicantName || 'Aday #' + app.applicant_user_id}</div>
-                <div style="color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem;">✉️ ${app.applicantEmail || 'Belirtilmedi'}</div>
-                <div style="margin-top: 1rem;">
-                  <a href="/users/${app.applicant_user_id}" class="btn btn-view" style="font-size: 0.8rem;">
-                    👤 Aday Profilini Aç
-                  </a>
-                  <a href="/users/${app.applicant_user_id}/applications" class="btn" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 0.8rem; margin-left: 0.3rem;">
-                    📄 Adayın Diğer Başvuruları
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Resume Link -->
-            <div style="margin-top: 1.5rem; background: var(--surface); padding: 1rem 1.25rem; border-radius: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-              <div>
-                📄 <strong>Özgeçmiş (CV) / Portfolyo:</strong>
-                ${app.resume_url 
-                  ? `<a href="${app.resume_url}" target="_blank" style="color: #34d399; margin-left: 0.5rem; text-decoration: underline; word-break: break-all;">${app.resume_url}</a>`
-                  : '<span style="color: #64748b; margin-left: 0.5rem;">Eklenmemiş</span>'
-                }
-              </div>
-              <div style="color: var(--muted); font-size: 0.85rem;">
-                📅 Başvuru Tarihi: <strong>${new Date(app.created_at).toLocaleString('tr-TR')}</strong>
-              </div>
-            </div>
-
-            <!-- Cover Letter -->
-            <h3 style="margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-              ✉️ Ön Yazı (Cover Letter)
-            </h3>
-            <div style="background: var(--surface); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border); color: #cbd5e1; line-height: 1.8; white-space: pre-wrap; font-size: 0.95rem;">
-              ${app.cover_letter || '<span style="color: #64748b; font-style: italic;">Aday herhangi bir ön yazı eklemedi.</span>'}
-            </div>
-
-            <!-- Quick Status Updater Buttons -->
-            <div style="margin-top: 2rem; padding: 1.25rem; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px;">
-              <h4 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: #38bdf8;">⚡ Hızlı Durum Değiştir</h4>
-              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
-                  <input type="hidden" name="status" value="pending">
-                  <button type="submit" class="btn" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
-                    ⏳ Beklemeye Al (pending)
-                  </button>
-                </form>
-
-                <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
-                  <input type="hidden" name="status" value="under_review">
-                  <button type="submit" class="btn" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">
-                    🔍 İncelemeye Al (under_review)
-                  </button>
-                </form>
-
-                <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
-                  <input type="hidden" name="status" value="accepted">
-                  <button type="submit" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
-                    ✅ Kabul Et (accepted)
-                  </button>
-                </form>
-
-                <form action="/applications/${app.id}/update" method="POST" style="display:inline;">
-                  <input type="hidden" name="status" value="rejected">
-                  <button type="submit" class="btn" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">
-                    ❌ Reddet (rejected)
-                  </button>
-                </form>
               </div>
             </div>
           </div>
-        </div>
+        </main>
+
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
@@ -643,60 +406,70 @@ const ApplicationViews = {
   /**
    * 3. EDIT FORM - Render Edit Application Form
    */
-  renderEditForm(app, { jobPostings = [], users = [] } = {}) {
+  renderEditForm(app) {
     return `
       <!DOCTYPE html>
       <html lang="tr">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Başvuruyu Düzenle - #${app.id}</title>
-        ${getSharedStyles()}
+        <title>Başvuruyu Düzenle — #${app.id} | İÜ YBS</title>
+        <style>
+          ${MintlifyTheme.getBaseStyles()}
+        </style>
       </head>
       <body>
-        <div class="container" style="max-width: 750px;">
-          ${renderNavbar('applications')}
+        ${MintlifyTheme.renderHeader('applications')}
 
-          <a href="/applications/${app.id}" class="btn btn-back">⬅️ İptal / Başvuru Detayına Dön</a>
-
-          <div class="card">
-            <h2 style="margin-top: 0; font-size: 1.5rem;">✏️ Başvuru Durumunu Güncelle (#${app.id})</h2>
-            <div style="background: var(--surface); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-              <div>💼 <strong>İlan:</strong> ${app.jobTitle || 'İlan #' + app.job_posting_id} (${app.jobCompany || '-'})</div>
-              <div style="margin-top: 0.3rem;">👤 <strong>Aday:</strong> ${app.applicantName || 'Aday #' + app.applicant_user_id} (${app.applicantEmail || ''})</div>
+        <main class="page-main">
+          <div class="page-container" style="max-width: 720px;">
+            <div style="margin-bottom: 18px;">
+              <a href="/applications/${app.id}" class="btn btn-secondary btn-sm">← İptal / Başvuru Detayına Dön</a>
             </div>
 
-            <form action="/applications/${app.id}/update" method="POST">
-              <div class="form-grid">
-                <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="card-base">
+              <div class="card-title-row">
+                <h1 class="card-heading">Başvuru Durumunu Güncelle</h1>
+                <span class="code-inline">#${app.id}</span>
+              </div>
+
+              <div class="route-info">
+                <div><strong>İlan:</strong> ${escapeHtml(app.jobTitle || 'İlan #' + app.job_posting_id)} (${escapeHtml(app.jobCompany || '-')})</div>
+                <div style="margin-top: 4px;"><strong>Aday:</strong> ${escapeHtml(app.applicantName || 'Aday #' + app.applicant_user_id)} (${escapeHtml(app.applicantEmail || '')})</div>
+              </div>
+
+              <form action="/applications/${app.id}/update" method="POST">
+                <div class="form-group" style="margin-bottom: 16px;">
                   <label for="status">Başvuru Durumu *</label>
                   <select id="status" name="status" required>
-                    <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>⏳ Beklemede (pending)</option>
-                    <option value="under_review" ${app.status === 'under_review' ? 'selected' : ''}>🔍 İnceleniyor (under_review)</option>
-                    <option value="accepted" ${app.status === 'accepted' ? 'selected' : ''}>✅ Kabul Edildi (accepted)</option>
-                    <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>❌ Reddedildi (rejected)</option>
-                    <option value="withdrawn" ${app.status === 'withdrawn' ? 'selected' : ''}>⚪ Geri Çekildi (withdrawn)</option>
+                    <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>Beklemede (pending)</option>
+                    <option value="under_review" ${app.status === 'under_review' ? 'selected' : ''}>İnceleniyor (under_review)</option>
+                    <option value="accepted" ${app.status === 'accepted' ? 'selected' : ''}>Kabul Edildi (accepted)</option>
+                    <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Reddedildi (rejected)</option>
+                    <option value="withdrawn" ${app.status === 'withdrawn' ? 'selected' : ''}>Geri Çekildi (withdrawn)</option>
                   </select>
                 </div>
 
-                <div class="form-group" style="grid-column: 1 / -1;">
+                <div class="form-group" style="margin-bottom: 16px;">
                   <label for="resume_url">Özgeçmiş (CV) / Portfolyo Linki</label>
-                  <input type="text" id="resume_url" name="resume_url" value="${app.resume_url || ''}">
+                  <input type="text" id="resume_url" name="resume_url" value="${escapeHtml(app.resume_url || '')}">
                 </div>
 
-                <div class="form-group" style="grid-column: 1 / -1;">
+                <div class="form-group" style="margin-bottom: 24px;">
                   <label for="cover_letter">Ön Yazı / Niyet Mektubu</label>
-                  <textarea id="cover_letter" name="cover_letter" rows="5">${app.cover_letter || ''}</textarea>
+                  <textarea id="cover_letter" name="cover_letter" rows="5">${escapeHtml(app.cover_letter || '')}</textarea>
                 </div>
-              </div>
 
-              <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-                <button type="submit" class="btn-submit" style="margin: 0;">💾 Değişiklikleri Kaydet</button>
-                <a href="/applications/${app.id}" class="btn btn-view">İptal</a>
-              </div>
-            </form>
+                <div class="action-cells">
+                  <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                  <a href="/applications/${app.id}" class="btn btn-secondary">İptal</a>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </main>
+
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
