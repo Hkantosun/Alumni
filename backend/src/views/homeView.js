@@ -1,7 +1,523 @@
 /**
  * HomeView - Istanbul University Management Information Systems (İÜ YBS)
- * Home Page & About Page View Layer
+ * Styled strictly in accordance with DESIGN.md (Mintlify Design System) via MintlifyTheme.
+ * Preserves the full-bleed silent looping Beyazıt Gate hero video.
  */
+
+const MintlifyTheme = require('./mintlifyTheme');
+const { escapeHtml } = MintlifyTheme;
+
+function getHomeSpecificStyles() {
+  return `
+    /* HERO BAND WITH SILENT FULL-BLEED VIDEO & MINTLIFY ATMOSPHERIC SCRIM */
+    .hero-band {
+      position: relative;
+      overflow: hidden;
+      padding: 88px 0 140px;
+      background: linear-gradient(135deg, var(--hero-dark-from) 0%, var(--hero-dark-to) 100%);
+      color: var(--on-dark);
+    }
+
+    .hero-video-wrapper {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-bg-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      will-change: transform;
+      filter: brightness(0.86) contrast(1.05);
+    }
+
+    .hero-atmospheric-scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        rgba(10, 22, 26, 0.62) 0%,
+        rgba(26, 61, 74, 0.45) 55%,
+        rgba(10, 10, 10, 0.72) 100%
+      );
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 820px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(10, 10, 10, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      color: var(--on-dark);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: var(--rounded-full);
+      margin-bottom: 24px;
+    }
+
+    .hero-display {
+      font-size: clamp(36px, 5.4vw, 68px);
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      color: var(--on-dark);
+      margin-bottom: 20px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.50;
+      color: rgba(255, 255, 255, 0.88);
+      max-width: 620px;
+      margin: 0 auto 32px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* FLOATING HERO PRODUCT MOCKUP (DESIGN.md hero-product-mockup) */
+    .mockup-overlap-wrap {
+      position: relative;
+      z-index: 3;
+      margin-top: -88px;
+      margin-bottom: 64px;
+    }
+
+    .hero-product-mockup {
+      background-color: var(--canvas);
+      border: 1px solid var(--hairline-soft);
+      border-radius: var(--rounded-lg);
+      box-shadow: 0 24px 48px -8px rgba(0, 0, 0, 0.14);
+      overflow: hidden;
+    }
+
+    .mockup-top-chrome {
+      height: 48px;
+      background-color: var(--canvas);
+      border-bottom: 1px solid var(--hairline-soft);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .mockup-brand-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .search-pill {
+      background-color: var(--surface);
+      color: var(--steel);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-md);
+      height: 32px;
+      padding: 0 12px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 240px;
+      justify-content: space-between;
+    }
+
+    .kbd-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-xs);
+      padding: 1px 5px;
+      color: var(--stone);
+    }
+
+    .mockup-grid {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 360px;
+    }
+
+    .docs-sidebar {
+      background-color: var(--surface-soft);
+      border-right: 1px solid var(--hairline-soft);
+      padding: 20px 12px;
+    }
+
+    .sidebar-section-header {
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.40;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--steel);
+      padding: 8px 12px 6px;
+    }
+
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      border-radius: var(--rounded-sm);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--steel);
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .sidebar-nav-item:hover {
+      background-color: var(--surface);
+      color: var(--ink);
+    }
+
+    .sidebar-nav-item.active {
+      background-color: var(--surface);
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .sidebar-count {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--stone);
+    }
+
+    .mockup-prose {
+      background-color: var(--canvas);
+      padding: 24px 28px;
+    }
+
+    .mockup-prose-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .mockup-prose-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.3px;
+    }
+
+    .pill-tabs-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pill-tab {
+      background-color: var(--canvas);
+      color: var(--steel);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-full);
+      padding: 5px 13px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-tab:hover {
+      background-color: var(--surface);
+      color: var(--ink);
+    }
+
+    .pill-tab.active {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    .property-list { border-top: 1px solid var(--hairline-soft); }
+
+    .property-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--hairline-soft);
+      text-decoration: none;
+      color: var(--ink);
+      transition: background-color 0.15s ease;
+    }
+
+    .property-row:hover { background-color: var(--surface-soft); }
+
+    .property-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+    .property-top-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .property-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+
+    .property-desc { font-size: 13px; color: var(--steel); }
+
+    .property-arrow { font-size: 14px; font-weight: 500; color: var(--steel); white-space: nowrap; }
+
+    .property-row:hover .property-arrow { color: var(--brand-green-deep); }
+
+    /* METRICS BAR */
+    .metrics-section { padding: 24px 0 64px; }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-lg);
+      background-color: var(--canvas);
+      overflow: hidden;
+    }
+
+    .metric-cell {
+      padding: 24px;
+      border-right: 1px solid var(--hairline);
+      text-decoration: none;
+      color: inherit;
+      transition: background-color 0.15s ease;
+    }
+
+    .metric-cell:last-child { border-right: none; }
+
+    .metric-cell:hover { background-color: var(--surface-soft); }
+
+    .metric-num {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -1px;
+      color: var(--ink);
+      line-height: 1.1;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metric-label { font-size: 14px; color: var(--steel); font-weight: 500; }
+
+    /* SECTIONS & CARDS */
+    .section-band { padding: 64px 0; }
+
+    .section-band-muted {
+      background-color: var(--surface-soft);
+      border-top: 1px solid var(--hairline-soft);
+      border-bottom: 1px solid var(--hairline-soft);
+    }
+
+    .section-header-center { text-align: center; max-width: 680px; margin: 0 auto 48px; }
+
+    .heading-2 {
+      font-size: clamp(28px, 3.6vw, 40px);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.8px;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+
+    .section-sub { font-size: 17px; color: var(--steel); line-height: 1.50; }
+
+    .cards-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+    .cards-grid-3 .card-base { margin-bottom: 0; }
+
+    .card-base:hover {
+      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.06);
+      border-color: #d4d4d4;
+    }
+
+    .card-base-featured {
+      border: 2px solid var(--brand-green);
+      box-shadow: 0 8px 24px rgba(0, 212, 164, 0.08);
+    }
+
+    .card-top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+    .check-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--rounded-full);
+      background-color: rgba(0, 212, 164, 0.14);
+      color: var(--brand-annotate);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .card-title { font-size: 19px; font-weight: 600; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.2px; }
+
+    .card-desc { font-size: 14px; color: var(--steel); line-height: 1.55; }
+
+    .card-foot-link { font-size: 14px; font-weight: 500; color: var(--ink); display: inline-flex; align-items: center; gap: 4px; }
+
+    /* SIGNATURE DUAL SHOWCASE */
+    .signature-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+
+    .testimonial-card-feature {
+      background-color: var(--testimonial-orange);
+      color: var(--on-dark);
+      border-radius: var(--rounded-lg);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .testimonial-quote { font-size: 24px; font-weight: 600; line-height: 1.3; letter-spacing: -0.4px; }
+
+    .testimonial-author { font-size: 14px; font-weight: 500; opacity: 0.92; }
+
+    .code-panel {
+      background-color: var(--surface-code);
+      border-radius: var(--rounded-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--hairline-dark);
+    }
+
+    .code-block-header {
+      background-color: var(--surface-code);
+      color: var(--on-dark-muted);
+      border-bottom: 1px solid #2c2c2e;
+      padding: 10px 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .copy-code-button {
+      background: transparent;
+      color: var(--on-dark-muted);
+      border: 1px solid #3a3a3c;
+      border-radius: var(--rounded-sm);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      padding: 3px 10px;
+      cursor: pointer;
+    }
+
+    .copy-code-button:hover { color: var(--on-dark); border-color: var(--brand-green); }
+
+    .code-block-pre {
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f5f5f7;
+      overflow-x: auto;
+      margin: 0;
+      flex: 1;
+    }
+
+    .tok-green { color: var(--brand-green); }
+    .tok-blue { color: #79b8ff; }
+    .tok-muted { color: #8e8e93; }
+
+    .two-col-tables { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    .feature-comparison-table {
+      background-color: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-md);
+      overflow: hidden;
+    }
+
+    .table-head-bar {
+      background-color: var(--surface-soft);
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--hairline);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--steel);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .feature-comparison-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--hairline-soft);
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 14px;
+      transition: background-color 0.15s ease;
+    }
+
+    .feature-comparison-row:last-child { border-bottom: none; }
+    .feature-comparison-row:hover { background-color: var(--surface-soft); }
+
+    @media (max-width: 1024px) {
+      .cards-grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .signature-split, .two-col-tables { grid-template-columns: 1fr; }
+      .mockup-grid { grid-template-columns: 1fr; }
+      .docs-sidebar { border-right: none; border-bottom: 1px solid var(--hairline-soft); }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .metric-cell:nth-child(2) { border-right: none; }
+      .metric-cell:nth-child(1), .metric-cell:nth-child(2) { border-bottom: 1px solid var(--hairline); }
+    }
+
+    @media (max-width: 768px) {
+      .search-pill { display: none; }
+      .hero-band { padding: 64px 0 110px; }
+      .cards-grid-3, .metrics-grid { grid-template-columns: 1fr; }
+      .metric-cell { border-right: none; border-bottom: 1px solid var(--hairline); }
+      .metric-cell:last-child { border-bottom: none; }
+      .testimonial-card-feature { padding: 28px; }
+    }
+  `;
+}
 
 const HomeView = {
   renderHomePage({ users = [], jobPostings = [], applications = [], departments = [] } = {}) {
@@ -10,799 +526,450 @@ const HomeView = {
     const totalApps = applications.length;
     const totalDepts = departments.length;
 
+    const alumniCount = users.filter(u => (u.role || '').toLowerCase() === 'alumni').length;
+    const studentCount = users.filter(u => (u.role || '').toLowerCase() === 'student').length;
+    const activeJobs = jobPostings.filter(j => j.is_active !== false);
+    const displayJobs = (activeJobs.length > 0 ? activeJobs : jobPostings).slice(0, 5);
+
+    const jobRowsHtml = displayJobs.length > 0
+      ? displayJobs.map(job => {
+          const jobType = escapeHtml(job.job_type || 'Full-time');
+          const filterKey = jobType.toLowerCase();
+          return `
+            <a href="/job-postings/${job.id}" class="property-row" data-job-type="${filterKey}">
+              <div class="property-left">
+                <div class="property-top-line">
+                  <span class="code-inline">#${job.id}</span>
+                  <span class="property-title">${escapeHtml(job.title)}</span>
+                  <span class="badge-type">${jobType}</span>
+                  ${job.department_code ? `<span class="badge-tag">${escapeHtml(job.department_code)}</span>` : ''}
+                </div>
+                <div class="property-desc">
+                  ${escapeHtml(job.company)} • ${escapeHtml(job.location || 'İstanbul')}
+                </div>
+              </div>
+              <span class="property-arrow">İncele →</span>
+            </a>
+          `;
+        }).join('')
+      : `
+        <div style="padding: 28px 4px; font-size: 14px; color: var(--steel);">
+          Henüz aktif ilan bulunmamaktadır. <a href="/job-postings" style="color: var(--brand-annotate); font-weight: 500;">Yeni ilan ekleyin →</a>
+        </div>
+      `;
+
+    const deptRowsHtml = departments.length > 0
+      ? departments.slice(0, 5).map(d => `
+          <a href="/departments/${d.id}/job-postings" class="feature-comparison-row">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge-tag">${escapeHtml(d.code)}</span>
+              <span style="font-weight: 500;">${escapeHtml(d.name)}</span>
+            </div>
+            <span class="badge-type">${d.jobPostingsCount || 0} İlan →</span>
+          </a>
+        `).join('')
+      : `
+        <a href="/departments" class="feature-comparison-row">
+          <span>Yönetim Bilişim Sistemleri</span>
+          <span class="badge-type">Bölümler →</span>
+        </a>
+      `;
+
     return `
       <!DOCTYPE html>
       <html lang="tr">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>İstanbul Üniversitesi YBS - Mezun ve Kariyer Bilgi Sistemi</title>
+        <title>İstanbul Üniversitesi YBS — Mezun ve Kariyer Bilgi Sistemi</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
-          
-          :root {
-            --bg: #070a12;
-            --surface: #0f1626;
-            --card-bg: #151d30;
-            --card-hover: #1e2942;
-            --iu-burgundy: #800020;
-            --iu-gold: #d4af37;
-            --iu-gold-glow: rgba(212, 175, 55, 0.25);
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --purple: #a855f7;
-            --emerald: #10b981;
-            --amber: #f59e0b;
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --border: #1e293b;
-            --border-gold: rgba(212, 175, 55, 0.35);
-          }
-
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-
-          body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
-          }
-
-          /* TOP STICKY NAVIGATION TABS */
-          .top-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(11, 15, 25, 0.92);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
-          }
-
-          .header-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0.85rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-          }
-
-          .brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: var(--text);
-          }
-
-          .brand-emblem {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #800020, #400010);
-            border: 2px solid var(--iu-gold);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: 0 0 15px var(--iu-gold-glow);
-          }
-
-          .brand-text {
-            display: flex;
-            flex-direction: column;
-          }
-
-          .brand-uni {
-            font-family: 'Cinzel', serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            color: #f1f5f9;
-            text-transform: uppercase;
-          }
-
-          .brand-dept {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--iu-gold);
-            letter-spacing: 0.03em;
-          }
-
-          .nav-tabs {
-            display: flex;
-            gap: 0.4rem;
-            align-items: center;
-            flex-wrap: wrap;
-          }
-
-          .nav-tab {
-            color: var(--muted);
-            text-decoration: none;
-            padding: 0.55rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-          }
-
-          .nav-tab:hover {
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.05);
-          }
-
-          .nav-tab.active {
-            color: #ffffff;
-            background: linear-gradient(135deg, rgba(128, 0, 32, 0.6), rgba(56, 189, 248, 0.2));
-            border: 1px solid var(--border-gold);
-            font-weight: 600;
-          }
-
-          .nav-tab.api-tab {
-            color: var(--accent);
-            font-weight: 600;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-          }
-
-          .nav-tab.api-tab:hover {
-            background: rgba(56, 189, 248, 0.15);
-          }
-
-          /* HERO SECTION WITH HISTORIC MAIN GATE BACKGROUND */
-          .hero-section {
-            position: relative;
-            min-height: 520px;
-            background: 
-              linear-gradient(to right, rgba(7, 10, 18, 0.96) 0%, rgba(7, 10, 18, 0.82) 50%, rgba(7, 10, 18, 0.94) 100%),
-              url('/images/iu_tarihi_kapi.jpg') center/cover no-repeat;
-            display: flex;
-            align-items: center;
-            padding: 4rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-          }
-
-          .hero-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 3rem;
-            align-items: center;
-          }
-
-          @media (max-width: 968px) {
-            .hero-content { grid-template-columns: 1fr; }
-          }
-
-          .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(212, 175, 55, 0.12);
-            border: 1px solid var(--iu-gold);
-            color: var(--iu-gold);
-            padding: 0.4rem 0.9rem;
-            border-radius: 9999px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 0 20px var(--iu-gold-glow);
-          }
-
-          .hero-title {
-            font-family: 'Cinzel', serif;
-            font-size: 2.75rem;
-            font-weight: 800;
-            line-height: 1.2;
-            color: #ffffff;
-            margin-bottom: 0.75rem;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-          }
-
-          .hero-title span {
-            background: linear-gradient(135deg, #d4af37 0%, #38bdf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-          }
-
-          .hero-subtitle {
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: #e2e8f0;
-            margin-bottom: 1rem;
-          }
-
-          .hero-desc {
-            font-size: 1.05rem;
-            color: var(--muted);
-            line-height: 1.7;
-            margin-bottom: 2rem;
-            max-width: 620px;
-          }
-
-          .hero-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-          }
-
-          .cta-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.85rem 1.6rem;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: all 0.25s ease;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-          }
-
-          .cta-btn:hover {
-            transform: translateY(-2px);
-          }
-
-          .cta-primary {
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            color: #070a12;
-            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
-          }
-
-          .cta-primary:hover {
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.5);
-          }
-
-          .cta-secondary {
-            background: rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.4);
-          }
-
-          .cta-secondary:hover {
-            background: rgba(56, 189, 248, 0.25);
-          }
-
-          .hero-gate-card {
-            background: rgba(21, 29, 48, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-gold);
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-          }
-
-          .gate-img-wrapper {
-            position: relative;
-            width: 100%;
-            height: 240px;
-            overflow: hidden;
-          }
-
-          .gate-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-          }
-
-          .hero-gate-card:hover .gate-img {
-            transform: scale(1.05);
-          }
-
-          .gate-caption {
-            padding: 1.25rem;
-          }
-
-          .gate-title {
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            color: var(--iu-gold);
-            font-weight: 700;
-            margin-bottom: 0.3rem;
-          }
-
-          .gate-info {
-            font-size: 0.85rem;
-            color: var(--muted);
-            line-height: 1.5;
-          }
-
-          /* LIVE STATS STRIP */
-          .stats-strip {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 2rem 1.5rem;
-          }
-
-          .stats-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-          }
-
-          .stat-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-          }
-
-          .stat-box:hover {
-            transform: translateY(-3px);
-            border-color: var(--border-gold);
-          }
-
-          .stat-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-          }
-
-          .stat-num {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-          }
-
-          .stat-desc {
-            font-size: 0.82rem;
-            color: var(--muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 0.3rem;
-          }
-
-          /* MAIN MODULES GRID */
-          .main-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 3.5rem 1.5rem;
-          }
-
-          .section-header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-          }
-
-          .section-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--text);
-            margin-bottom: 0.5rem;
-          }
-
-          .section-desc {
-            font-size: 1rem;
-            color: var(--muted);
-            max-width: 600px;
-            margin: 0 auto;
-          }
-
-          .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-          }
-
-          .module-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            text-decoration: none;
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-          }
-
-          .module-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-          }
-
-          .module-card:hover {
-            transform: translateY(-5px);
-            background: var(--card-hover);
-            border-color: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5);
-          }
-
-          .module-card:hover::before {
-            opacity: 1;
-          }
-
-          .module-card-icon {
-            font-size: 2.5rem;
-            line-height: 1;
-          }
-
-          .module-card-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            margin: 0;
-            color: #f1f5f9;
-          }
-
-          .module-card-desc {
-            font-size: 0.92rem;
-            color: var(--muted);
-            line-height: 1.6;
-            margin: 0;
-            flex-grow: 1;
-          }
-
-          .module-badge {
-            align-self: flex-start;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 0.25rem 0.65rem;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-          }
-
-          /* YBS FOCUS PILLARS */
-          .pillars-section {
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            padding: 3.5rem 1.5rem;
-          }
-
-          .pillars-container {
-            max-width: 1200px;
-            margin: 0 auto;
-          }
-
-          .pillars-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.25rem;
-            margin-top: 2rem;
-          }
-
-          .pillar-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.5rem;
-            border-left: 4px solid var(--iu-gold);
-          }
-
-          .pillar-card h4 {
-            font-size: 1.05rem;
-            color: var(--text);
-            margin-bottom: 0.4rem;
-          }
-
-          .pillar-card p {
-            font-size: 0.85rem;
-            color: var(--muted);
-            line-height: 1.5;
-          }
-
-          /* FOOTER */
-          footer {
-            background: #05080e;
-            border-top: 1px solid var(--border);
-            padding: 3rem 1.5rem 2rem;
-            color: var(--muted);
-          }
-
-          .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-          }
-
-          .footer-links {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-          }
-
-          .footer-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.88rem;
-            transition: color 0.2s;
-          }
-
-          .footer-links a:hover {
-            color: var(--iu-gold);
-          }
-
-          .footer-bottom {
-            max-width: 1200px;
-            margin: 1.5rem auto 0;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #64748b;
-          }
+          ${MintlifyTheme.getBaseStyles()}
+          ${getHomeSpecificStyles()}
         </style>
       </head>
       <body>
-        <!-- TOP STICKY NAVIGATION BAR -->
-        <header class="top-header">
-          <div class="header-container">
-            <a href="/home" class="brand">
-              <div class="brand-emblem">🏛️</div>
-              <div class="brand-text">
-                <span class="brand-uni">İstanbul Üniversitesi</span>
-                <span class="brand-dept">Yönetim Bilişim Sistemleri (YBS)</span>
-              </div>
-            </a>
+        ${MintlifyTheme.renderHeader('home')}
 
-            <nav class="nav-tabs">
-              <a href="/home" class="nav-tab active">🏠 Ana Sayfa</a>
-              <a href="/users" class="nav-tab">👥 Mezunlar & Kullanıcılar</a>
-              <a href="/departments" class="nav-tab">🏛️ Bölümler</a>
-              <a href="/job-postings" class="nav-tab">💼 İlanlar</a>
-              <a href="/applications" class="nav-tab">📄 Başvurular</a>
-              <a href="/announcements" class="nav-tab">📢 Duyurular</a>
-              <a href="/about" class="nav-tab">ℹ️ Hakkında</a>
-              <a href="/api/swagger" target="_blank" class="nav-tab api-tab">⚡ Swagger API</a>
-            </nav>
-          </div>
-        </header>
+        <main class="page-main">
+          <!-- HERO BAND WITH FULL-BLEED SILENT BEYAZIT VIDEO -->
+          <section class="hero-band">
+            <div class="hero-video-wrapper">
+              <video
+                id="heroGateVideo"
+                class="hero-bg-video"
+                autoplay
+                muted
+                loop
+                playsinline
+                webkit-playsinline
+                preload="metadata"
+                poster="/images/iu_tarihi_kapi.jpg"
+                onended="this.currentTime = 0; this.play();"
+                aria-label="İstanbul Üniversitesi Beyazıt Tarihi Ana Kapı Tanıtım Videosu">
+                <source src="/videos/main(1).mov" type="video/quicktime">
+                <source src="/videos/main.mov" type="video/quicktime">
+                <source src="/videos/main(1).mov" type="video/mp4">
+                <source src="/videos/main.mov" type="video/mp4">
+              </video>
+              <div class="hero-atmospheric-scrim"></div>
+            </div>
 
-        <!-- HERO SECTION WITH HISTORIC BEYAZIT GATE -->
-        <section class="hero-section">
-          <div class="hero-content">
-            <div>
-              <div class="hero-badge">
-                🏛️ T.C. İSTANBUL ÜNİVERSİTESİ • 1453 • İKTİSAT FAKÜLTESİ
+            <div class="container">
+              <div class="hero-inner">
+                <div class="hero-eyebrow-pill">
+                  <span class="mint-dot"></span>
+                  İKTİSAT FAKÜLTESİ • YÖNETİM BİLİŞİM SİSTEMLERİ
+                </div>
+                <h1 class="hero-display">
+                  Mezun, öğrenci ve kariyer köprüsü.
+                </h1>
+                <p class="hero-subtitle">
+                  Türkiye'nin ilk üniversitesinde bilişim ve yönetim vizyonunu geleceğe taşıyoruz. İlanlar, başvurular ve akademik ağ tek platformda.
+                </p>
+                <div class="hero-cta-row">
+                  <a href="/job-postings" class="btn btn-accent-green">İlanları İncele (${totalJobs})</a>
+                  <a href="/users" class="btn btn-on-dark">Mezun Ağı (${totalUsers})</a>
+                  <a href="/applications" class="btn btn-secondary-dark">Başvurular (${totalApps}) →</a>
+                </div>
               </div>
-              <h1 class="hero-title">
-                Yönetim Bilişim Sistemleri <span>Mezun & Kariyer Portalı</span>
-              </h1>
-              <div class="hero-subtitle">
-                Teknoloji, Yönetim ve Verinin Kesiştiği Köklü Çatı
-              </div>
-              <p class="hero-desc">
-                Türkiye'nin ilk üniversitesinde bilişim ve yönetim vizyonunu geleceğe taşıyoruz. Mezunlarımızı, öğrencilerimizi ve akademik kadromuzu tek bir entegre platformda buluşturuyoruz.
-              </p>
+            </div>
+          </section>
 
-              <div class="hero-actions">
-                <a href="/job-postings" class="cta-btn cta-primary">
-                  💼 İlanları İncele (${totalJobs} Aktif İlan)
+          <!-- FLOATING MINTLIFY PRODUCT MOCKUP (LIVE PORTAL WORKSPACE) -->
+          <section class="mockup-overlap-wrap">
+            <div class="container">
+              <div class="hero-product-mockup">
+                <div class="mockup-top-chrome">
+                  <div class="mockup-brand-mini">
+                    <span class="mint-dot"></span>
+                    <span>İÜ YBS Portal Dokümantasyonu & Canlı Akış</span>
+                  </div>
+                  <div class="search-pill">
+                    <span>İlan, mezun veya bölüm ara...</span>
+                    <span class="kbd-chip">⌘K</span>
+                  </div>
+                </div>
+
+                <div class="mockup-grid">
+                  <aside class="docs-sidebar">
+                    <div class="sidebar-section-header">MODÜLLER</div>
+                    <a href="/job-postings" class="sidebar-nav-item active">
+                      <span>İş & Staj İlanları</span>
+                      <span class="sidebar-count">${totalJobs}</span>
+                    </a>
+                    <a href="/applications" class="sidebar-nav-item">
+                      <span>Başvuru Takibi</span>
+                      <span class="sidebar-count">${totalApps}</span>
+                    </a>
+                    <a href="/users" class="sidebar-nav-item">
+                      <span>Mezun & Üye Dizini</span>
+                      <span class="sidebar-count">${totalUsers}</span>
+                    </a>
+                    <a href="/departments" class="sidebar-nav-item">
+                      <span>Akademik Bölümler</span>
+                      <span class="sidebar-count">${totalDepts}</span>
+                    </a>
+                    <a href="/announcements" class="sidebar-nav-item">
+                      <span>Duyurular</span>
+                      <span class="sidebar-count">→</span>
+                    </a>
+
+                    <div class="sidebar-section-header" style="margin-top: 14px;">GELİŞTİRİCİ</div>
+                    <a href="/api/swagger" target="_blank" class="sidebar-nav-item">
+                      <span>Swagger OpenAPI</span>
+                      <span class="sidebar-count">↗</span>
+                    </a>
+                    <a href="/about" class="sidebar-nav-item">
+                      <span>Sistem Mimarisi</span>
+                      <span class="sidebar-count">MVC</span>
+                    </a>
+                  </aside>
+
+                  <div class="mockup-prose">
+                    <div class="mockup-prose-head">
+                      <div class="mockup-prose-title">Son Açılan Kariyer İlanları</div>
+                      <div class="pill-tabs-row" role="tablist" aria-label="İlan Türü Filtresi">
+                        <button type="button" class="pill-tab active" data-filter="all">Tümü (${displayJobs.length})</button>
+                        <button type="button" class="pill-tab" data-filter="full-time">Full-time</button>
+                        <button type="button" class="pill-tab" data-filter="internship">Internship</button>
+                        <button type="button" class="pill-tab" data-filter="remote">Remote</button>
+                      </div>
+                    </div>
+
+                    <div class="property-list" id="mintlifyJobFeed">
+                      ${jobRowsHtml}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LIVE METRICS BAR -->
+          <section class="metrics-section">
+            <div class="container">
+              <div class="metrics-grid">
+                <a href="/users" class="metric-cell">
+                  <div class="metric-num"><span class="mint-dot"></span> ${totalUsers}</div>
+                  <div class="metric-label">Kayıtlı Kullanıcı (${alumniCount} Mezun, ${studentCount} Öğrenci)</div>
                 </a>
-                <a href="/applications" class="cta-btn cta-secondary">
-                  📄 Başvuru Takibi (${totalApps} Başvuru)
+                <a href="/job-postings" class="metric-cell">
+                  <div class="metric-num"><span class="mint-dot"></span> ${totalJobs}</div>
+                  <div class="metric-label">Yayınlanan İş & Staj İlanı</div>
                 </a>
-                <a href="/users" class="cta-btn" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
-                  👥 Mezun Ağı (${totalUsers} Üye)
+                <a href="/applications" class="metric-cell">
+                  <div class="metric-num"><span class="mint-dot"></span> ${totalApps}</div>
+                  <div class="metric-label">Aktif İş / Staj Başvurusu</div>
+                </a>
+                <a href="/departments" class="metric-cell">
+                  <div class="metric-num"><span class="mint-dot"></span> ${totalDepts}</div>
+                  <div class="metric-label">Fakülte & Akademik Bölüm</div>
                 </a>
               </div>
             </div>
+          </section>
 
-            <!-- HISTORIC GATE SHOWCASE CARD -->
-            <div class="hero-gate-card">
-              <div class="gate-img-wrapper">
-                <img src="/images/iu_tarihi_kapi.jpg" alt="İstanbul Üniversitesi Beyazıt Tarihi Ana Kapı" class="gate-img">
-              </div>
-              <div class="gate-caption">
-                <div class="gate-title">Tarihi Beyazıt Ana Kapısı</div>
-                <p class="gate-info">
-                  1453'ten bugüne bilimin, araştırmanın ve geleceği inşa eden liderlerin yetiştiği simge Beyazıt Yerleşkesi.
+          <!-- MODULES SECTION -->
+          <section class="section-band section-band-muted">
+            <div class="container">
+              <div class="section-header-center">
+                <span class="section-kicker">PLATFORM MODÜLLERİ</span>
+                <h2 class="heading-2">Tüm mezun ve kariyer süreçleri için tasarlandı</h2>
+                <p class="section-sub">
+                  Direct ve Nested rotalar, PostgreSQL 16 veritabanı ve OpenAPI 3.0 altyapısı ile tek merkezden yönetim.
                 </p>
               </div>
-            </div>
-          </div>
-        </section>
 
-        <!-- LIVE STATISTICS STRIP -->
-        <section class="stats-strip">
-          <div class="stats-container">
-            <div class="stat-box">
-              <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">👥</div>
-              <div>
-                <div class="stat-num" style="color: #38bdf8;">${totalUsers}</div>
-                <div class="stat-desc">Kayıtlı Kullanıcı & Mezun</div>
+              <div class="cards-grid-3">
+                <a href="/job-postings" class="card-base card-base-featured">
+                  <div>
+                    <div class="card-top-row" style="margin-bottom: 14px;">
+                      <span class="check-badge">✓</span>
+                      <span class="badge-green">${totalJobs} Aktif İlan</span>
+                    </div>
+                    <h3 class="card-title">İş & Staj İlanları</h3>
+                    <p class="card-desc">
+                      Yazılım, veri analitiği ve danışmanlık alanlarındaki güncel fırsatları listeleyin, filtreleyin ve yeni ilan oluşturun.
+                    </p>
+                  </div>
+                  <span class="card-foot-link">İlanları İncele →</span>
+                </a>
+
+                <a href="/applications" class="card-base">
+                  <div>
+                    <div class="card-top-row" style="margin-bottom: 14px;">
+                      <span class="check-badge">✓</span>
+                      <span class="code-inline">GET /applications</span>
+                    </div>
+                    <h3 class="card-title">Başvuru Takibi</h3>
+                    <p class="card-desc">
+                      Adayların CV bağlantılarını, ön yazılarını ve değerlendirme statülerini (Beklemede, İnceleniyor, Kabul, Ret) yönetin.
+                    </p>
+                  </div>
+                  <span class="card-foot-link">Başvurulara Git →</span>
+                </a>
+
+                <a href="/departments" class="card-base">
+                  <div>
+                    <div class="card-top-row" style="margin-bottom: 14px;">
+                      <span class="check-badge">✓</span>
+                      <span class="code-inline">Nested Routes</span>
+                    </div>
+                    <h3 class="card-title">Bölümler & İlanlar</h3>
+                    <p class="card-desc">
+                      İktisat Fakültesi bölümlerini ve bölümlere hedeflenmiş ilanları ilişkisel rotalarla keşfedin.
+                    </p>
+                  </div>
+                  <span class="card-foot-link">Bölümleri Gör →</span>
+                </a>
+
+                <a href="/users" class="card-base">
+                  <div>
+                    <div class="card-top-row" style="margin-bottom: 14px;">
+                      <span class="check-badge">✓</span>
+                      <span class="code-inline">${totalUsers} Üye</span>
+                    </div>
+                    <h3 class="card-title">Mezun & Öğrenci Ağı</h3>
+                    <p class="card-desc">
+                      Mezunlar, aktif öğrenciler ve akademisyen profillerini görüntüleyin ve yeni kullanıcı kayıtları oluşturun.
+                    </p>
+                  </div>
+                  <span class="card-foot-link">Topluluğa Git →</span>
+                </a>
+
+                <a href="/announcements" class="card-base">
+                  <div>
+                    <div class="card-top-row" style="margin-bottom: 14px;">
+                      <span class="check-badge">✓</span>
+                      <span class="code-inline">Duyurular</span>
+                    </div>
+                    <h3 class="card-title">Duyurular & Etkinlikler</h3>
+                    <p class="card-desc">
+                      Kariyer günleri, mezunlar buluşması, hackathonlar ve bölüm duyurularını anlık olarak takip edin.
+                    </p>
+                  </div>
+                  <span class="card-foot-link">Duyuruları Oku →</span>
+                </a>
+
+                <a href="/api/swagger" target="_blank" class="card-base">
+                  <div>
+                    <div class="card-top-row" style="margin-bottom: 14px;">
+                      <span class="check-badge">✓</span>
+                      <span class="badge-tag">OpenAPI 3.0</span>
+                    </div>
+                    <h3 class="card-title">Swagger REST API</h3>
+                    <p class="card-desc">
+                      Tüm JSON API uç noktalarını interaktif Swagger UI dokümantasyonu üzerinden canlı olarak test edin.
+                    </p>
+                  </div>
+                  <span class="card-foot-link">Swagger UI'yi Aç →</span>
+                </a>
               </div>
             </div>
+          </section>
 
-            <div class="stat-box">
-              <div class="stat-icon" style="background: rgba(212, 175, 55, 0.15); color: #d4af37;">💼</div>
-              <div>
-                <div class="stat-num" style="color: #d4af37;">${totalJobs}</div>
-                <div class="stat-desc">Açık İş & Staj İlanı</div>
+          <!-- SIGNATURE MINTLIFY ORANGE HIGHLIGHT CARD + DARK CODE BLOCK -->
+          <section class="section-band">
+            <div class="container">
+              <div class="signature-split">
+                <div class="testimonial-card-feature">
+                  <div>
+                    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; opacity: 0.9;">İÜ YBS VİZYONU</span>
+                    <blockquote class="testimonial-quote" style="margin-top: 12px;">
+                      “1453'ten bugüne uzanan köklü akademik mirasımızı, veri odaklı modern yazılım mimarisiyle buluşturarak mezunlarımız ve öğrencilerimiz arasında kalıcı bir köprü kuruyoruz.”
+                    </blockquote>
+                  </div>
+                  <div class="testimonial-author">
+                    İstanbul Üniversitesi İktisat Fakültesi • Yönetim Bilişim Sistemleri Bölümü
+                  </div>
+                </div>
+
+                <div class="code-panel">
+                  <div class="code-block-header">
+                    <span>api-endpoints.sh — REST & Nested Rotalar</span>
+                    <button type="button" class="copy-code-button" id="copyApiSnippet">Kopyala</button>
+                  </div>
+                  <pre class="code-block-pre" id="apiCodeContent"><span class="tok-muted"># Tüm aktif iş & staj ilanlarını JSON olarak getir</span>
+<span class="tok-green">curl</span> <span class="tok-blue">http://localhost:3000/api/job-postings</span>
+
+<span class="tok-muted"># Bölüme özel hedeflenmiş ilanlar (Nested Route)</span>
+<span class="tok-green">curl</span> <span class="tok-blue">http://localhost:3000/api/departments/1/job-postings</span>
+
+<span class="tok-muted"># Sistem sağlık durumu ve PostgreSQL bağlantısı</span>
+<span class="tok-green">curl</span> <span class="tok-blue">http://localhost:3000/api/health</span></pre>
+                </div>
               </div>
             </div>
+          </section>
 
-            <div class="stat-box">
-              <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">📄</div>
-              <div>
-                <div class="stat-num" style="color: #34d399;">${totalApps}</div>
-                <div class="stat-desc">İş / Staj Başvurusu</div>
+          <!-- DEPARTMENTS & ACADEMIC FOCUS TABLES -->
+          <section class="section-band section-band-muted">
+            <div class="container">
+              <div class="two-col-tables">
+                <div>
+                  <h3 style="font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 16px;">Bölümler & Nested İlanlar</h3>
+                  <div class="feature-comparison-table">
+                    <div class="table-head-bar">
+                      <span>BÖLÜM ADI</span>
+                      <span>İLAN ROTASI</span>
+                    </div>
+                    ${deptRowsHtml}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 style="font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 16px;">YBS Akademik Odak Alanları</h3>
+                  <div class="feature-comparison-table">
+                    <div class="table-head-bar">
+                      <span>DİSİPLİN</span>
+                      <span>ALAN</span>
+                    </div>
+                    <div class="feature-comparison-row">
+                      <span style="font-weight: 500;">01. Veri Bilimi & İş Zekası</span>
+                      <span class="badge-type">Analytics</span>
+                    </div>
+                    <div class="feature-comparison-row">
+                      <span style="font-weight: 500;">02. Kurumsal Yazılım & Web Mimarisi</span>
+                      <span class="badge-type">Full-Stack</span>
+                    </div>
+                    <div class="feature-comparison-row">
+                      <span style="font-weight: 500;">03. Siber Güvenlik & BT Yönetişimi</span>
+                      <span class="badge-type">Governance</span>
+                    </div>
+                    <div class="feature-comparison-row">
+                      <span style="font-weight: 500;">04. Yapay Zeka & Süreç Otomasyonu</span>
+                      <span class="badge-type">AI / ML</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <div class="stat-box">
-              <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🏛️</div>
-              <div>
-                <div class="stat-num" style="color: #c084fc;">${totalDepts}</div>
-                <div class="stat-desc">Akademik Bölüm</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- CORE MODULES GRID -->
-        <main class="main-content">
-          <div class="section-header">
-            <h2 class="section-title">Sistem Modülleri & Hizmetler</h2>
-            <p class="section-desc">
-              İÜ YBS Mezun Takip Sistemi üzerinden tüm kariyer, başvuru ve akademik ağ fonksiyonlarına tek tıkla ulaşın.
-            </p>
-          </div>
-
-          <div class="modules-grid">
-            <!-- Module 1: Job Postings -->
-            <a href="/job-postings" class="module-card">
-              <span class="module-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">Kariyer Fırsatları</span>
-              <div class="module-card-icon">💼</div>
-              <h3 class="module-card-title">İş & Staj İlanları</h3>
-              <p class="module-card-desc">
-                YBS mezunları ve partner kurumlar tarafından paylaşılan yazılım, veri analitiği, danışmanlık ve yönetim pozisyonlarını inceleyin veya yeni ilan verin.
-              </p>
-            </a>
-
-            <!-- Module 2: Applications -->
-            <a href="/applications" class="module-card">
-              <span class="module-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">Başvuru Süreçleri</span>
-              <div class="module-card-icon">📄</div>
-              <h3 class="module-card-title">İş & Staj Başvuruları</h3>
-              <p class="module-card-desc">
-                İlanlara yapılan tüm başvuruları, aday CV bağlantılarını ve ön yazılarını görüntüleyin; başvuru durumlarını (Beklemede, İnceleniyor, Kabul, Ret) güncelleyin.
-              </p>
-            </a>
-
-            <!-- Module 3: Departments & Nested Routes -->
-            <a href="/departments" class="module-card">
-              <span class="module-badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">Akademik Birimler</span>
-              <div class="module-card-icon">🏛️</div>
-              <h3 class="module-card-title">Bölümler & Nested İlanlar</h3>
-              <p class="module-card-desc">
-                İktisat Fakültesi bölümlerini ve her bölüme hedeflenmiş iş ilanlarını nested rotalar (/departments/:id/job-postings) üzerinden filtreleyerek keşfedin.
-              </p>
-            </a>
-
-            <!-- Module 4: Users / Alumni -->
-            <a href="/users" class="module-card">
-              <span class="module-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc;">Topluluk Ağı</span>
-              <div class="module-card-icon">👥</div>
-              <h3 class="module-card-title">Mezunlar & Kullanıcılar</h3>
-              <p class="module-card-desc">
-                Mezunlarımız, aktif öğrencilerimiz ve akademik kadromuzun profillerini görüntüleyin, arayın ve yeni kullanıcı kayıtları oluşturun.
-              </p>
-            </a>
-
-            <!-- Module 5: Announcements -->
-            <a href="/announcements" class="module-card">
-              <span class="module-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">Gündem & Etkinlik</span>
-              <div class="module-card-icon">📢</div>
-              <h3 class="module-card-title">Duyurular & Etkinlikler</h3>
-              <p class="module-card-desc">
-                Bölüm haberleri, mezunlar buluşması, hackathonlar, kariyer günleri ve akademik seminer takvimini anlık olarak takip edin.
-              </p>
-            </a>
-
-            <!-- Module 6: Swagger API -->
-            <a href="/api/swagger" target="_blank" class="module-card">
-              <span class="module-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">OpenAPI 3.0</span>
-              <div class="module-card-icon">⚡</div>
-              <h3 class="module-card-title">Swagger API Dokümantasyonu</h3>
-              <p class="module-card-desc">
-                Geliştiriciler ve araştırmacılar için sistemin sunduğu tüm REST API ve nested endpoint'lerini interaktif Swagger UI üzerinden test edin.
-              </p>
-            </a>
-          </div>
+          </section>
         </main>
 
-        <!-- YBS ACADEMIC PILLARS -->
-        <section class="pillars-section">
-          <div class="pillars-container">
-            <div class="section-header">
-              <h2 class="section-title">İÜ Yönetim Bilişim Sistemleri Odak Alanları</h2>
-              <p class="section-desc">
-                Bölümümüz, çağımızın en kritik teknoloji ve yönetim disiplinlerinde lider mezunlar yetiştirmektedir.
-              </p>
-            </div>
+        ${MintlifyTheme.renderFooter()}
 
-            <div class="pillars-grid">
-              <div class="pillar-card">
-                <h4>📊 Veri Bilimi & İş Zekası</h4>
-                <p>Büyük veri analitiği, veri madenciliği, iş zekası dashboardları ve veri odaklı stratejik karar alma mekanizmaları.</p>
-              </div>
-              <div class="pillar-card">
-                <h4>💻 Kurumsal Yazılım & Web</h4>
-                <p>Modern Full-Stack web mimarileri, bulut bilişim, mikroservisler, API tasarımı ve kurumsal yazılım geliştirme.</p>
-              </div>
-              <div class="pillar-card">
-                <h4>🛡️ Siber Güvenlik & BT Yönetişimi</h4>
-                <p>Bilgi güvenliği, KVKK/GDPR uyumluluğu, IT risk yönetimi, sistem analizi ve kurumsal bilişim standartları.</p>
-              </div>
-              <div class="pillar-card">
-                <h4>🤖 Yapay Zeka & İnovasyon</h4>
-                <p>Makine öğrenmesi modelleri, doğal dil işleme, süreç otomasyonu ve dijital iş modelleri dönüşümü.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <!-- SILENT HERO VIDEO OPTIMIZATIONS + MOCKUP TAB FILTER + COPY SNIPPET -->
+        <script>
+          (function() {
+            const video = document.getElementById('heroGateVideo');
+            if (video) {
+              video.muted = true;
+              video.volume = 0;
 
-        <!-- FOOTER -->
-        <footer>
-          <div class="footer-container">
-            <div>
-              <div style="font-family: 'Cinzel', serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700;">
-                İstanbul Üniversitesi İktisat Fakültesi
-              </div>
-              <div style="color: var(--iu-gold); font-size: 0.9rem; margin-top: 0.2rem;">
-                Yönetim Bilişim Sistemleri Bölümü Mezun & Kariyer Bilgi Sistemi
-              </div>
-              <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748b;">
-                📍 Beyazıt Yerleşkesi, 34452 Fatih / İstanbul
-              </div>
-            </div>
+              if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver(function(entries) {
+                  entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                      if (video.paused) video.play().catch(function() {});
+                    } else {
+                      if (!video.paused) video.pause();
+                    }
+                  });
+                }, { threshold: 0.15 });
+                observer.observe(video);
+              }
 
-            <div class="footer-links">
-              <a href="/home">Ana Sayfa</a>
-              <a href="/users">Kullanıcılar</a>
-              <a href="/departments">Bölümler</a>
-              <a href="/job-postings">İş İlanları</a>
-              <a href="/applications">Başvurular</a>
-              <a href="/announcements">Duyurular</a>
-              <a href="/about">Hakkında</a>
-              <a href="/api/swagger" target="_blank">Swagger API</a>
-            </div>
-          </div>
+              video.addEventListener('ended', function() {
+                video.currentTime = 0;
+                video.play().catch(function() {});
+              });
 
-          <div class="footer-bottom">
-            © 2026 T.C. İstanbul Üniversitesi • Web Programlama Dersi MVC Mimarisi Projesi • Tüm Hakları Saklıdır.
-          </div>
-        </footer>
+              const playPromise = video.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(function() {
+                  video.muted = true;
+                  video.play().catch(function() {});
+                });
+              }
+            }
+
+            const tabs = document.querySelectorAll('.pill-tab');
+            const rows = document.querySelectorAll('#mintlifyJobFeed .property-row');
+            tabs.forEach(function(tab) {
+              tab.addEventListener('click', function() {
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                const filter = tab.getAttribute('data-filter');
+                rows.forEach(function(row) {
+                  const type = row.getAttribute('data-job-type') || '';
+                  row.style.display = (filter === 'all' || type.indexOf(filter) !== -1) ? 'flex' : 'none';
+                });
+              });
+            });
+
+            const copyBtn = document.getElementById('copyApiSnippet');
+            const codeEl = document.getElementById('apiCodeContent');
+            if (copyBtn && codeEl && navigator.clipboard) {
+              copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(codeEl.innerText).then(function() {
+                  copyBtn.textContent = 'Kopyalandı ✓';
+                  setTimeout(function() { copyBtn.textContent = 'Kopyala'; }, 1800);
+                }).catch(function() {});
+              });
+            }
+          })();
+        </script>
       </body>
       </html>
     `;
@@ -815,63 +982,84 @@ const HomeView = {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hakkında - İÜ YBS Mezun Takip Sistemi</title>
+        <title>Hakkında — İÜ YBS Mezun Takip Sistemi</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
-          body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: #070a12;
-            color: #f8fafc;
-            padding: 3rem 1.5rem;
-            margin: 0;
+          ${MintlifyTheme.getBaseStyles()}
+
+          .about-wrap {
+            max-width: 820px;
+            margin: 56px auto 88px;
+            padding: 0 24px;
+          }
+
+          .about-title {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.6px;
+            color: var(--ink);
+            margin-bottom: 14px;
+          }
+
+          .about-text {
+            font-size: 16px;
+            color: var(--steel);
             line-height: 1.6;
-          }
-          .box {
-            max-width: 750px;
-            margin: 2rem auto;
-            background: #151d30;
-            padding: 2.5rem;
-            border-radius: 16px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-          }
-          h1 {
-            font-family: 'Cinzel', serif;
-            color: #d4af37;
-            font-size: 2rem;
-            margin-top: 0;
-          }
-          p { color: #cbd5e1; }
-          .btn {
-            background: #38bdf8;
-            color: #070a12;
-            text-decoration: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 700;
-            display: inline-block;
-            margin-top: 1.5rem;
+            margin-bottom: 24px;
           }
         </style>
       </head>
       <body>
-        <div class="box">
-          <h1>🏛️ İÜ YBS Mezun Takip Sistemi</h1>
-          <p style="margin-top: 1rem;">
-            Bu sistem, <strong>İstanbul Üniversitesi İktisat Fakültesi Yönetim Bilişim Sistemleri Bölümü</strong> bünyesinde geliştirilen; mezunlar, öğrenciler ve akademisyenler arasındaki bağı güçlendirmeyi amaçlayan kapsamlı bir web uygulamasıdır.
-          </p>
-          <p style="margin-top: 1rem;">
-            <strong>Mimarî & Altyapı Özellikleri:</strong>
-          </p>
-          <ul style="color: #94a3b8; padding-left: 1.5rem; margin-top: 0.5rem; line-height: 1.8;">
-            <li>Modern Node.js & Express.js MVC (Model-View-Controller) Katmanlı Mimarisi</li>
-            <li>PostgreSQL 16 İlişkisel Veritabanı ve Docker Compose Konteyner Yapısı</li>
-            <li>Direct Rotalar ve İlişkisel Nested Rotalar (Bölüm -> İlanlar, İlan -> Başvurular, Kullanıcı -> Başvurular)</li>
-            <li>OpenAPI 3.0 & Swagger UI ile Tam REST API Dokümantasyonu</li>
-            <li>Kariyer İlanı Yayınlama, CV ile Başvuru ve Anlık Canlı Arama/Filtreleme</li>
-          </ul>
-          <a href="/home" class="btn">🏠 Ana Sayfaya Dön</a>
-        </div>
+        ${MintlifyTheme.renderHeader('about')}
+
+        <main class="page-main about-wrap">
+          <div class="card-base" style="padding: 36px;">
+            <span class="section-kicker"><span class="mint-dot"></span> MİMARİ & PROJE BİLGİSİ</span>
+            <h1 class="about-title">İÜ YBS Mezun Takip Sistemi</h1>
+            <p class="about-text">
+              Bu sistem, <strong style="color: var(--ink);">İstanbul Üniversitesi İktisat Fakültesi Yönetim Bilişim Sistemleri Bölümü</strong> bünyesinde geliştirilen; mezunlar, öğrenciler ve akademisyenler arasındaki bağı güçlendirmeyi amaçlayan kapsamlı bir web uygulamasıdır.
+            </p>
+
+            <div class="table-wrap" style="margin-bottom: 28px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bileşen</th>
+                    <th>Teknoloji / Standart</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Katmanlı MVC Mimarisi</td>
+                    <td><span class="code-inline">Node.js + Express.js</span></td>
+                  </tr>
+                  <tr>
+                    <td>İlişkisel Veritabanı & Konteyner</td>
+                    <td><span class="code-inline">PostgreSQL 16 + Docker</span></td>
+                  </tr>
+                  <tr>
+                    <td>Direct & Nested Rotalar</td>
+                    <td><span class="code-inline">/departments/:id/job-postings</span></td>
+                  </tr>
+                  <tr>
+                    <td>API Dokümantasyonu</td>
+                    <td><span class="badge-tag">OpenAPI 3.0 Swagger</span></td>
+                  </tr>
+                  <tr>
+                    <td>Arayüz Tasarım Dili</td>
+                    <td><span class="badge-green">Mintlify DESIGN.md</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <a href="/home" class="btn btn-primary">Ana Sayfaya Dön</a>
+              <a href="/api/swagger" target="_blank" class="btn btn-secondary">Swagger API'yi Aç</a>
+            </div>
+          </div>
+        </main>
+
+        ${MintlifyTheme.renderFooter()}
       </body>
       </html>
     `;
