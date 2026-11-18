@@ -8,10 +8,12 @@
  *   - Edit Form: GET /applications/:id/edit
  */
 
+const SharedHeader = require('./sharedHeader');
+
 function getSharedStyles() {
   return `
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+      ${SharedHeader.getHeaderStyles()}
       :root {
         --bg: #0b0f19;
         --surface: #111827;
@@ -38,10 +40,10 @@ function getSharedStyles() {
         background-color: var(--bg);
         color: var(--text);
         margin: 0;
-        padding: 2rem 1rem;
+        padding: 0;
         line-height: 1.5;
       }
-      .container { max-width: 1200px; margin: 0 auto; }
+      .container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1.5rem; }
       .nav-bar {
         display: flex;
         justify-content: space-between;
@@ -238,20 +240,7 @@ function getSharedStyles() {
 }
 
 function renderNavbar(activeItem = 'applications') {
-  return `
-    <header class="nav-bar">
-      <a href="/home" class="nav-brand">🎓 Alumni Tracking System</a>
-      <nav class="nav-links">
-        <a href="/home" class="${activeItem === 'home' ? 'active' : ''}">🏠 Ana Sayfa</a>
-        <a href="/users" class="${activeItem === 'users' ? 'active' : ''}">👥 Kullanıcılar</a>
-        <a href="/departments" class="${activeItem === 'departments' ? 'active' : ''}">🏛️ Bölümler</a>
-        <a href="/job-postings" class="${activeItem === 'job-postings' ? 'active' : ''}">💼 İlanlar</a>
-        <a href="/applications" class="${activeItem === 'applications' ? 'active' : ''}">📄 Başvurular</a>
-        <a href="/announcements" class="${activeItem === 'announcements' ? 'active' : ''}">📢 Duyurular</a>
-        <a href="/api/swagger" target="_blank" style="color: #38bdf8; font-weight: 700;">⚡ Swagger API</a>
-      </nav>
-    </header>
-  `;
+  return SharedHeader.renderHeader(activeItem);
 }
 
 const ApplicationViews = {
@@ -367,8 +356,8 @@ const ApplicationViews = {
         ${getSharedStyles()}
       </head>
       <body>
+        ${renderNavbar('applications')}
         <div class="container">
-          ${renderNavbar('applications')}
 
           <!-- Stats Grid -->
           <div class="stats-grid">
@@ -512,8 +501,8 @@ const ApplicationViews = {
         ${getSharedStyles()}
       </head>
       <body>
+        ${renderNavbar('applications')}
         <div class="container" style="max-width: 900px;">
-          ${renderNavbar('applications')}
 
           <a href="/applications" class="btn btn-back">⬅️ Tüm Başvurulara Dön (Direct Route)</a>
 
@@ -654,8 +643,8 @@ const ApplicationViews = {
         ${getSharedStyles()}
       </head>
       <body>
+        ${renderNavbar('applications')}
         <div class="container" style="max-width: 750px;">
-          ${renderNavbar('applications')}
 
           <a href="/applications/${app.id}" class="btn btn-back">⬅️ İptal / Başvuru Detayına Dön</a>
 

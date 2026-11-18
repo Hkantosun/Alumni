@@ -9,6 +9,8 @@
  *   6. Deleted View (POST /announcements/:id/delete -> Delete Response)
  */
 
+const SharedHeader = require('./sharedHeader');
+
 const AnnouncementViews = {
   /**
    * 1. READ ALL - Render Announcement Listing HTML View (GET /announcements)
@@ -44,6 +46,8 @@ const AnnouncementViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>📢 Duyuru Yönetimi - Alumni System</title>
         <style>
+          ${SharedHeader.getHeaderStyles()}
+
           :root {
             --bg: #0f172a;
             --card-bg: #1e293b;
@@ -56,13 +60,10 @@ const AnnouncementViews = {
             --warning: #f59e0b;
             --danger: #ef4444;
           }
-          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
-          .container { max-width: 1050px; margin: 0 auto; }
-          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-          .nav-links { display: flex; gap: 1rem; margin-bottom: 2rem; background: var(--card-bg); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); }
-          .nav-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s; }
-          .nav-links a:hover, .nav-links a.active { color: var(--accent); }
-          h1 { color: #38bdf8; margin: 0; font-size: 1.8rem; }
+          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+          .container { max-width: 1100px; margin: 2.5rem auto; padding: 0 1.5rem; }
+          .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+          .page-header h1 { color: #f8fafc; margin: 0; font-size: 1.8rem; font-weight: 700; }
           .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
           .card h2 { margin-top: 0; color: #818cf8; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
           .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
@@ -75,8 +76,8 @@ const AnnouncementViews = {
           .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
           .checkbox-group input { width: auto; cursor: pointer; }
           .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
-          .btn-primary { background: var(--accent); color: #0f172a; }
-          .btn-primary:hover { background: var(--accent-hover); color: white; }
+          .btn-primary { background: #38bdf8; color: #070a12; }
+          .btn-primary:hover { background: #0284c7; color: white; }
           .btn-view { background: #334155; color: #38bdf8; }
           .btn-view:hover { background: #475569; }
           .btn-edit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
@@ -93,20 +94,12 @@ const AnnouncementViews = {
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1>📢 Alumni Duyuru Sistemi</h1>
-            <span style="color: var(--muted);">Web MVC Announcement Model</span>
-          </div>
+        ${SharedHeader.renderHeader('announcements')}
 
-          <div class="nav-links">
-            <a href="/home">🏠 Ana Sayfa</a>
-            <a href="/users">👥 Kullanıcılar</a>
-            <a href="/departments">🏛️ Bölümler</a>
-            <a href="/job-postings">💼 İlanlar</a>
-            <a href="/applications">📄 Başvurular</a>
-            <a href="/announcements" class="active">📢 Duyurular</a>
-            <a href="/api/swagger" target="_blank">📚 Swagger API</a>
+        <div class="container">
+          <div class="page-header">
+            <h1>📢 Duyurular ve Bildirimler</h1>
+            <span style="color: var(--muted); font-size: 0.9rem;">Toplam ${announcements.length} Duyuru</span>
           </div>
 
           <!-- CREATE FORM (POST /announcements) -->
@@ -184,8 +177,9 @@ const AnnouncementViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Duyuru Detayı - ${announcement.title}</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 650px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+          ${SharedHeader.getHeaderStyles()}
+          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 0; margin: 0; }
+          .card { max-width: 650px; margin: 3rem auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
           h2 { color: #38bdf8; margin-top: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
           .meta-info { display: flex; gap: 1.5rem; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
           .content-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 1.25rem; font-size: 1rem; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap; margin-bottom: 2rem; }
@@ -198,6 +192,7 @@ const AnnouncementViews = {
         </style>
       </head>
       <body>
+        ${SharedHeader.renderHeader('announcements')}
         <div class="card">
           <h2>📢 ${announcement.title}</h2>
           <div class="meta-info">
@@ -231,8 +226,9 @@ const AnnouncementViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Duyuru Düzenle - ${announcement.title}</title>
         <style>
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 3rem; margin: 0; }
-          .card { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+          ${SharedHeader.getHeaderStyles()}
+          body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 0; margin: 0; }
+          .card { max-width: 600px; margin: 3rem auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
           h2 { color: #f59e0b; margin-top: 0; font-size: 1.5rem; }
           .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem; }
           label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
@@ -248,6 +244,7 @@ const AnnouncementViews = {
         </style>
       </head>
       <body>
+        ${SharedHeader.renderHeader('announcements')}
         <div class="card">
           <h2>✏️ Duyuruyu Düzenle (#${announcement.id})</h2>
           <form action="/announcements/${announcement.id}/update" method="POST">

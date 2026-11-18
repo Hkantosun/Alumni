@@ -49,27 +49,28 @@ const NotFoundView = {
             flex-direction: column;
           }
 
-          /* TOP STICKY NAVIGATION TABS */
+          /* TOP MINIMALIST HEADER */
           .top-header {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(11, 15, 25, 0.92);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
+            height: 72px;
+            background: rgba(7, 10, 18, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
           }
 
           .header-container {
-            max-width: 1280px;
+            max-width: 1360px;
+            height: 100%;
             margin: 0 auto;
-            padding: 0.85rem 1.5rem;
+            padding: 0 2rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1.5rem;
           }
 
           .brand {
@@ -77,63 +78,149 @@ const NotFoundView = {
             align-items: center;
             gap: 0.75rem;
             text-decoration: none;
-            color: var(--text);
+            color: #ffffff;
+            flex-shrink: 0;
+            transition: opacity 0.2s ease;
           }
 
-          .brand-emblem {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #800020, #400010);
-            border: 2px solid var(--iu-gold);
+          .brand:hover {
+            opacity: 0.9;
+          }
+
+          .brand-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(128, 0, 32, 0.95), rgba(212, 175, 55, 0.35));
+            border: 1px solid rgba(212, 175, 55, 0.45);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: 0 0 15px var(--iu-gold-glow);
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #ffffff;
+            letter-spacing: 0.04em;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
           }
 
           .brand-text {
             display: flex;
             flex-direction: column;
+            line-height: 1.25;
           }
 
-          .brand-uni {
+          .brand-name {
             font-family: 'Cinzel', serif;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
-            letter-spacing: 0.08em;
-            color: #f1f5f9;
-            text-transform: uppercase;
-          }
-
-          .brand-dept {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--iu-gold);
             letter-spacing: 0.03em;
-          }
-
-          .nav-tabs {
+            color: #ffffff;
             display: flex;
-            gap: 0.4rem;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 3px;
           }
 
-          .nav-tab {
-            color: var(--muted);
-            text-decoration: none;
-            padding: 0.55rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.88rem;
+          .brand-sparkle {
+            color: var(--iu-gold);
+            font-size: 0.75rem;
+            display: inline-block;
+            transform: translateY(-2px);
+          }
+
+          .brand-tag {
+            font-size: 0.74rem;
             font-weight: 500;
-            transition: all 0.2s ease;
+            color: var(--muted);
+            letter-spacing: 0.02em;
           }
 
-          .nav-tab:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.05);
+          .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+          }
+
+          .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            padding: 0.4rem 0;
+            position: relative;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+          }
+
+          .nav-link:hover {
+            color: #ffffff;
+          }
+
+          .nav-link.active {
+            color: #ffffff;
+            font-weight: 600;
+          }
+
+          .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+          }
+
+          .header-cta-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.45rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #e86034 0%, #d44e24 100%);
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            box-shadow: 0 4px 16px rgba(232, 96, 52, 0.35);
+            transition: all 0.25s ease;
+          }
+
+          .header-cta-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(232, 96, 52, 0.55);
+            filter: brightness(1.08);
+          }
+
+          @media (max-width: 868px) {
+            .top-header {
+              height: auto;
+              padding: 0.75rem 0;
+            }
+            .header-container {
+              padding: 0 1rem;
+              flex-wrap: wrap;
+              gap: 0.75rem;
+            }
+            .nav-links {
+              order: 3;
+              width: 100%;
+              overflow-x: auto;
+              padding-bottom: 0.35rem;
+              gap: 1.25rem;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
+            }
+            .nav-links::-webkit-scrollbar {
+              display: none;
+            }
+            .brand-tag {
+              display: none;
+            }
+            .header-cta-pill {
+              padding: 0.45rem 1rem;
+              font-size: 0.82rem;
+            }
           }
 
           /* MAIN CONTENT AREA */
@@ -300,21 +387,27 @@ const NotFoundView = {
         <!-- HEADER -->
         <header class="top-header">
           <div class="header-container">
-            <a href="/home" class="brand">
-              <div class="brand-emblem">🎓</div>
+            <a href="/home" class="brand" aria-label="İstanbul Üniversitesi YBS Ana Sayfa">
+              <div class="brand-badge">İÜ</div>
               <div class="brand-text">
-                <span class="brand-uni">İstanbul Üniversitesi</span>
-                <span class="brand-dept">Mezun ve Kariyer Bilgi Sistemi</span>
+                <span class="brand-name">İstanbul Üniversitesi<span class="brand-sparkle">✦</span></span>
+                <span class="brand-tag">YBS Mezun & Kariyer Portalı</span>
               </div>
             </a>
-            <nav class="nav-tabs">
-              <a href="/home" class="nav-tab">Ana Sayfa</a>
-              <a href="/users" class="nav-tab">Mezunlar & Öğrenciler</a>
-              <a href="/job-postings" class="nav-tab">İş İlanları</a>
-              <a href="/announcements" class="nav-tab">Duyurular</a>
-              <a href="/departments" class="nav-tab">Bölümler</a>
-              <a href="/api/swagger" class="nav-tab" style="color: var(--iu-gold);">Swagger API</a>
+            <nav class="nav-links">
+              <a href="/home" class="nav-link">Ana Sayfa</a>
+              <a href="/users" class="nav-link">Mezunlar</a>
+              <a href="/departments" class="nav-link">Bölümler</a>
+              <a href="/job-postings" class="nav-link">İlanlar</a>
+              <a href="/applications" class="nav-link">Başvurular</a>
+              <a href="/announcements" class="nav-link">Duyurular</a>
+              <a href="/about" class="nav-link">Hakkında</a>
             </nav>
+            <div class="header-actions">
+              <a href="/api/swagger" target="_blank" class="header-cta-pill" title="Swagger OpenAPI Arayüzü">
+                Swagger API
+              </a>
+            </div>
           </div>
         </header>
 

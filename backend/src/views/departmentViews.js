@@ -3,6 +3,8 @@
  * Supports direct (/departments) and nested links (/departments/:id/job-postings).
  */
 
+const SharedHeader = require('./sharedHeader');
+
 const DepartmentViews = {
   renderDepartmentListPage(departments) {
     const rows = departments.length > 0
@@ -34,6 +36,8 @@ const DepartmentViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>🏛️ Bölüm Yönetimi & Nested Rotalar - Alumni System</title>
         <style>
+          ${SharedHeader.getHeaderStyles()}
+
           :root {
             --bg: #0f172a;
             --card-bg: #1e293b;
@@ -46,12 +50,8 @@ const DepartmentViews = {
             --success: #10b981;
             --danger: #ef4444;
           }
-          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
-          .container { max-width: 1100px; margin: 0 auto; }
-          .nav-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border); }
-          .nav-links { display: flex; gap: 1rem; }
-          .nav-links a { color: var(--text); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; font-size: 0.95rem; transition: background 0.2s; }
-          .nav-links a:hover, .nav-links a.active { background: #334155; color: var(--accent); }
+          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+          .container { max-width: 1150px; margin: 2.5rem auto; padding: 0 1.5rem; }
           .card { background-color: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border); margin-bottom: 2rem; }
           h1 { margin-top: 0; font-size: 1.8rem; color: var(--text); }
           .route-info { background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent); padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5; }
@@ -73,20 +73,9 @@ const DepartmentViews = {
         </style>
       </head>
       <body>
-        <div class="container">
-          <header class="nav-bar">
-            <div style="font-weight: 700; font-size: 1.2rem; color: var(--accent);">🎓 Alumni Tracking System</div>
-            <nav class="nav-links">
-              <a href="/home">🏠 Ana Sayfa</a>
-              <a href="/users">👥 Kullanıcılar</a>
-              <a href="/departments" class="active">🏛️ Bölümler (Direct)</a>
-              <a href="/job-postings">💼 İlanlar</a>
-              <a href="/applications">📄 Başvurular</a>
-              <a href="/announcements">📢 Duyurular</a>
-              <a href="/api/swagger" target="_blank" style="color: #38bdf8; font-weight: bold;">⚡ Swagger API</a>
-            </nav>
-          </header>
+        ${SharedHeader.renderHeader('departments')}
 
+        <div class="container">
           <main class="card">
             <h1>🏛️ Bölüm Listesi (Direct Route: <code>GET /departments</code>)</h1>
             <div class="route-info">
@@ -142,9 +131,10 @@ const DepartmentViews = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${department.name} - Bölüm Detayı</title>
         <style>
+          ${SharedHeader.getHeaderStyles()}
           :root { --bg: #0f172a; --card-bg: #1e293b; --accent: #38bdf8; --text: #f8fafc; --muted: #94a3b8; --border: #334155; }
-          body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); padding: 2rem; margin: 0; }
-          .container { max-width: 800px; margin: 0 auto; }
+          body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text); padding: 0; margin: 0; }
+          .container { max-width: 850px; margin: 2.5rem auto; padding: 0 1.5rem; }
           .card { background-color: var(--card-bg); border-radius: 12px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
           .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; border: none; }
           .btn-back { background: #334155; color: #e2e8f0; margin-bottom: 1rem; }
@@ -154,6 +144,7 @@ const DepartmentViews = {
         </style>
       </head>
       <body>
+        ${SharedHeader.renderHeader('departments')}
         <div class="container">
           <a href="/departments" class="btn btn-back">⬅️ Bölüm Listesine Dön</a>
           <div class="card">
