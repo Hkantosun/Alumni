@@ -15,6 +15,7 @@
 - [UI Design System (DESIGN.md)](#-ui-design-system-designmd)
 - [Database Migrations, Factories & Seeds](#-database-migrations-factories--seeds)
 - [MVC Architecture](#-mvc-architecture)
+- [Authentication & Authorization (RBAC)](#-authentication--authorization-rbac)
 - [Middleware & Guardian Architecture](#-middleware--guardian-architecture)
 - [Logging System & Error Tracking](#-logging-system--error-tracking)
 - [Core Requirements](#-core-requirements-defined-by-the-instructor)
@@ -137,6 +138,12 @@ Interactive OpenAPI (Swagger UI) documentation is available at:
 | **GET** | `/api/users/:userId/applications` | List applications submitted by a user (**Nested REST Route**) |
 | **POST** | `/api/users/:userId/applications` | Submit application on behalf of a user (**Nested REST Route**) |
 | **GET** | `/api/announcements` | List announcements (Direct REST Route) |
+| **GET / POST** | `/register` | User registration form & transactional user + role-profile creation |
+| **GET / POST** | `/login` | Login interface & HMAC-SHA256 `HttpOnly` session cookie issuance |
+| **GET / POST** | `/logout` | Session termination & cookie clearing |
+| **GET** | `/me` | Authenticated redirect to current user's profile |
+| **GET** | `/dashboard` | Role-specific user workspace (`student`, `alumni`, `academic_staff`, `admin`) |
+| **GET** | `/admin` | Protected Admin Panel (`admin` role required) |
 | **GET** | `/departments` | Departments web listing (Direct Web Page) |
 | **GET** | `/departments/:departmentId/job-postings` | Jobs for department (**Nested Web Page**) |
 | **GET** | `/job-postings` | Job postings web listing (Direct Web Page) |
@@ -416,6 +423,29 @@ Alumni/
 | **`.env`** | **Configuration** | Local environment file (git-ignored) containing database credentials and ports. |
 | **`.example.env`** | **Configuration Template** | Template environment variables file to guide setting up `.env`. |
 | **`ddd.md`** | **Model & Architecture** | Comprehensive Database Design Documentation containing Mermaid ER diagram, table schemas, and data dictionary. |
+
+---
+
+## 🔐 Authentication & Authorization (RBAC)
+
+The platform implements full-stack authentication, session management, and Role-Based Access Control (RBAC) aligned with the specification in [`ddd.md`](./ddd.md#6-yetkilendirme-ve-rol-tabanlı-erişim-kontrolü-authorization--rbac):
+
+### 1. 📝 Registration, Login & Logout (`authController.js`, `authViews.js`, `authRoutes.js`)
+- **`GET / POST /register`:** Multi-role registration supporting `alumni`, `student`, and `academic_staff` (self-registration for `admin` is blocked). Passwords are hashed using Node.js `crypto.scryptSync` with a 16-byte random salt (`scrypt:<salt>:<hash>`), and both `users` and the role-specific profile table (`alumni_profiles`, `student_profiles`, `academic_profiles`) are created atomically inside a PostgreSQL transaction.
+- **`GET / POST /login`:** Validates credentials via `crypto.timingSafeEqual`, verifies `users.is_active`, and issues an HMAC-SHA256 signed `HttpOnly; SameSite=Lax` cookie (`alumni_session`) valid for 24 hours (or 7 days with *"Oturumu açık tut"*).
+- **`GET / POST /logout`:** Clears the `alumni_session` cookie and redirects to `/login?loggedOut=1`.
+
+### 2. 🛡️ Auth & RBAC Middleware (`backend/src/middlewares/authMiddleware.js`)
+- **`authenticate`:** Verifies `alumni_session` cookie or `Authorization: Bearer <token>` header; returns `401 Unauthorized` JSON for API clients or redirects browsers to `/login`.
+- **`checkAccountStatus({ requireVerified })`:** Verifies live `is_active` (and optional `is_verified`) flags from PostgreSQL.
+- **`authorize(...allowedRoles)`:** Enforces role-based permissions (`403 Forbidden` on mismatch).
+- **`requireOwnership(getOwnerIdFn)`:** Enforces resource ownership with `admin` bypass.
+- All `401`/`403` denials are audited in `logs/error.logs` via `fileLogger.js`.
+
+### 3. 🧭 Role-Based Navigation, User Pages & Admin Panel
+- **Dynamic Role Navigation (`mintlifyTheme.js`):** Header links adapt automatically to the signed-in user's role (`guest`, `student`, `alumni`, `academic_staff`, `admin`) using `AsyncLocalStorage` (`sessionAuth.js`).
+- **Role-Specific Workspace (`GET /dashboard`):** Tailored tools per role — Mentorship request hub & applications for `student`; incoming mentorship approval & job postings for `alumni`; quick announcement publishing for `academic_staff`; and direct admin shortcut for `admin`.
+- **Admin Control Panel (`GET /admin`):** Protected by `authenticate`, `checkAccountStatus()`, and `authorize('admin')`, allowing admins to manage user roles, active/verified status, departments, announcements, job postings, and application statuses.
 
 ---
 
