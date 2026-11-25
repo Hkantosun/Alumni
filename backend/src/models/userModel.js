@@ -3,7 +3,29 @@
  * Encapsulates data storage and CRUD operations for Users using PostgreSQL database.
  */
 
+const crypto = require('crypto');
 const db = require('../db/db');
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `scrypt:${salt}:${derivedKey}`;
+}
+
+function verifyPassword(password, storedHash) {
+  if (!password || !storedHash || typeof storedHash !== 'string') return false;
+  if (!storedHash.startsWith('scrypt:')) return false;
+
+  const parts = storedHash.split(':');
+  if (parts.length !== 3) return false;
+
+  const [, salt, expectedHex] = parts;
+  const derivedBuf = crypto.scryptSync(password, salt, 64);
+  const expectedBuf = Buffer.from(expectedHex, 'hex');
+
+  if (derivedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(derivedBuf, expectedBuf);
+}
 
 function formatUserRow(row) {
   if (!row) return null;
@@ -188,6 +210,160 @@ const UserModel = {
     );
 
     return rows.length > 0 ? formatUserRow(rows[0]) : null;
+  },
+
+  /**
+   * Find a user by email address.
+   */
+  async findByEmail(email) {
+    if (!email) return null;
+    const { rows } = await db.query(
+      `SELECT id, email, role, first_name, last_name, phone, profile_image_url, is_active, is_verified, created_at, updated_at
+       FROM users WHERE LOWER(email) = LOWER($1);`,
+      [email.trim()]
+    );
+    return rows.length > 0 ? formatUserRow(rows[0]) : null;
+  },
+
+  /**
+   * Find a user with password_hash for authentication.
+   */
+  async findAuthByEmail(email) {
+    if (!email) return null;
+    const { rows } = await db.query(
+      `SELECT id, email, password_hash, role, first_name, last_name, phone, profile_image_url, is_active, is_verified, created_at, updated_at
+       FROM users WHERE LOWER(email) = LOWER($1);`,
+      [email.trim()]
+    );
+    if (rows.length === 0) return null;
+    const formatted = formatUserRow(rows[0]);
+    formatted.password_hash = rows[0].password_hash;
+    return formatted;
+  },
+
+  verifyPassword,
+
+  /**
+   * Register a new user along with their role-specific profile inside a transaction.
+   */
+  async registerWithProfile(payload) {
+    const client = await db.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const firstName = payload.first_name.trim();
+      const lastName = payload.last_name.trim();
+      const email = payload.email.trim().toLowerCase();
+      const passwordHash = hashPassword(payload.password);
+      const role = normalizeRole(payload.role);
+      const phone = payload.phone ? payload.phone.trim() : null;
+      const profileImage = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(`${firstName} ${lastName}`)}`;
+
+      const userResult = await client.query(
+        `INSERT INTO users (email, password_hash, role, first_name, last_name, phone, profile_image_url, is_active, is_verified, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, TRUE, NOW(), NOW())
+         RETURNING id, email, role, first_name, last_name, phone, profile_image_url, is_active, is_verified, created_at, updated_at;`,
+        [email, passwordHash, role, firstName, lastName, phone, profileImage]
+      );
+      const user = formatUserRow(userResult.rows[0]);
+
+      const departmentId = parseInt(payload.department_id, 10);
+      let profile = null;
+
+      if (role === 'alumni') {
+        const gradYear = parseInt(payload.graduation_year, 10);
+        const degree = (payload.degree || 'Bachelor').trim();
+        const jobTitle = payload.current_job_title ? payload.current_job_title.trim() : null;
+        const company = payload.current_company ? payload.current_company.trim() : null;
+        const city = payload.current_city ? payload.current_city.trim() : null;
+        const availableForMentorship = payload.available_for_mentorship === true || payload.available_for_mentorship === 'on' || payload.available_for_mentorship === 'true';
+
+        const profResult = await client.query(
+          `INSERT INTO alumni_profiles (user_id, department_id, graduation_year, degree, current_job_title, current_company, current_city, available_for_mentorship, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+           RETURNING *;`,
+          [user.id, departmentId, gradYear, degree, jobTitle, company, city, availableForMentorship]
+        );
+        profile = profResult.rows[0];
+      } else if (role === 'student') {
+        const studentNumber = payload.student_number.trim();
+        const enrollmentYear = parseInt(payload.enrollment_year, 10);
+        const expectedGradYear = parseInt(payload.expected_graduation_year, 10);
+        const degree = (payload.degree || 'Bachelor').trim();
+        const interests = payload.interests ? payload.interests.trim() : null;
+
+        const profResult = await client.query(
+          `INSERT INTO student_profiles (user_id, department_id, student_number, enrollment_year, expected_graduation_year, degree, interests, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+           RETURNING *;`,
+          [user.id, departmentId, studentNumber, enrollmentYear, expectedGradYear, degree, interests]
+        );
+        profile = profResult.rows[0];
+      } else if (role === 'academic_staff') {
+        const academicTitle = payload.academic_title.trim();
+        const officeLocation = payload.office_location ? payload.office_location.trim() : null;
+        const researchAreas = payload.research_areas ? payload.research_areas.trim() : null;
+
+        const profResult = await client.query(
+          `INSERT INTO academic_profiles (user_id, department_id, academic_title, office_location, research_areas, updated_at)
+           VALUES ($1, $2, $3, $4, $5, NOW())
+           RETURNING *;`,
+          [user.id, departmentId, academicTitle, officeLocation, researchAreas]
+        );
+        profile = profResult.rows[0];
+      }
+
+      await client.query('COMMIT');
+      return { user, profile };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  },
+
+  /**
+   * Fetch role-specific profile + department info for a user.
+   */
+  async getRoleProfile(user) {
+    if (!user) return null;
+    const role = String(user.role || '').toLowerCase();
+
+    if (role === 'alumni') {
+      const { rows } = await db.query(
+        `SELECT ap.*, d.code AS department_code, d.name AS department_name, d.faculty AS department_faculty
+         FROM alumni_profiles ap
+         LEFT JOIN departments d ON ap.department_id = d.id
+         WHERE ap.user_id = $1;`,
+        [user.id]
+      );
+      return rows[0] || null;
+    }
+
+    if (role === 'student') {
+      const { rows } = await db.query(
+        `SELECT sp.*, d.code AS department_code, d.name AS department_name, d.faculty AS department_faculty
+         FROM student_profiles sp
+         LEFT JOIN departments d ON sp.department_id = d.id
+         WHERE sp.user_id = $1;`,
+        [user.id]
+      );
+      return rows[0] || null;
+    }
+
+    if (role === 'academic_staff') {
+      const { rows } = await db.query(
+        `SELECT acp.*, d.code AS department_code, d.name AS department_name, d.faculty AS department_faculty
+         FROM academic_profiles acp
+         LEFT JOIN departments d ON acp.department_id = d.id
+         WHERE acp.user_id = $1;`,
+        [user.id]
+      );
+      return rows[0] || null;
+    }
+
+    return null;
   },
 
   /**
