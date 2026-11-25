@@ -56,7 +56,8 @@ const UserController = {
         `);
       }
 
-      const htmlView = UserViews.renderUserDetailPage(user);
+      const roleProfile = await UserModel.getRoleProfile(user);
+      const htmlView = UserViews.renderUserDetailPage(user, roleProfile);
       res.send(htmlView);
     } catch (err) {
       console.error('Error in renderUserDetail:', err);

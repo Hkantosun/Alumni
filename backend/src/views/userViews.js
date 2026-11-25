@@ -11,6 +11,7 @@
  */
 
 const MintlifyTheme = require('./mintlifyTheme');
+const DashboardViews = require('./dashboardViews');
 const { escapeHtml } = MintlifyTheme;
 
 function renderStatusCard({ title, message, badgeText, badgeClass = 'badge-green', backHref = '/users', backLabel = 'Mezun Listesine Dön' }) {
@@ -190,7 +191,10 @@ const UserViews = {
   /**
    * 2. READ ONE - Render User Detail HTML View (GET /users/:id)
    */
-  renderUserDetailPage(user) {
+  renderUserDetailPage(user, roleProfile = null) {
+    const roleProfileRows = roleProfile
+      ? DashboardViews.renderRoleProfileRows(user, roleProfile)
+      : '';
     return `
       <!DOCTYPE html>
       <html lang="tr">
@@ -244,6 +248,7 @@ const UserViews = {
                       <td>${new Date(user.updatedAt).toLocaleString('tr-TR')}</td>
                     </tr>
                     ` : ''}
+                    ${roleProfileRows}
                   </tbody>
                 </table>
               </div>

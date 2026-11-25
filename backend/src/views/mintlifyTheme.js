@@ -3,6 +3,8 @@
  * Implements DESIGN.md (Mintlify Design Language) consistently across every page.
  */
 
+const { getCurrentUser } = require('../utils/sessionAuth');
+
 function escapeHtml(value) {
   if (value === null || value === undefined) return '';
   return String(value)
@@ -11,6 +13,68 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+const ROLE_DISPLAY_LABELS = {
+  admin: 'Admin',
+  academic_staff: 'Akademik',
+  alumni: 'Mezun',
+  student: 'Öğrenci',
+  guest: 'Ziyaretçi'
+};
+
+function getNavItemsForUser(currentUser) {
+  const role = currentUser && currentUser.role ? String(currentUser.role).toLowerCase() : 'guest';
+  const userId = currentUser && currentUser.id ? currentUser.id : null;
+
+  const byRole = {
+    guest: [
+      { key: 'home', label: 'Ana Sayfa', href: '/home' },
+      { key: 'departments', label: 'Bölümler', href: '/departments' },
+      { key: 'job-postings', label: 'İlanlar', href: '/job-postings' },
+      { key: 'announcements', label: 'Duyurular', href: '/announcements' },
+      { key: 'about', label: 'Hakkında', href: '/about' }
+    ],
+    student: [
+      { key: 'home', label: 'Ana Sayfa', href: '/home' },
+      { key: 'dashboard', label: 'Panelim', href: '/dashboard' },
+      { key: 'users', label: 'Mezunlar', href: '/users' },
+      { key: 'departments', label: 'Bölümler', href: '/departments' },
+      { key: 'job-postings', label: 'İlanlar', href: '/job-postings' },
+      { key: 'applications', label: 'Başvurularım', href: userId ? `/users/${userId}/applications` : '/applications' },
+      { key: 'announcements', label: 'Duyurular', href: '/announcements' }
+    ],
+    alumni: [
+      { key: 'home', label: 'Ana Sayfa', href: '/home' },
+      { key: 'dashboard', label: 'Panelim', href: '/dashboard' },
+      { key: 'users', label: 'Mezunlar', href: '/users' },
+      { key: 'departments', label: 'Bölümler', href: '/departments' },
+      { key: 'job-postings', label: 'İlanlar', href: '/job-postings' },
+      { key: 'my-jobs', label: 'İlanlarım', href: userId ? `/users/${userId}/job-postings` : '/job-postings' },
+      { key: 'announcements', label: 'Duyurular', href: '/announcements' }
+    ],
+    academic_staff: [
+      { key: 'home', label: 'Ana Sayfa', href: '/home' },
+      { key: 'dashboard', label: 'Panelim', href: '/dashboard' },
+      { key: 'users', label: 'Mezunlar', href: '/users' },
+      { key: 'departments', label: 'Bölümler', href: '/departments' },
+      { key: 'job-postings', label: 'İlanlar', href: '/job-postings' },
+      { key: 'applications', label: 'Başvurular', href: '/applications' },
+      { key: 'announcements', label: 'Duyurular', href: '/announcements' }
+    ],
+    admin: [
+      { key: 'home', label: 'Ana Sayfa', href: '/home' },
+      { key: 'dashboard', label: 'Panelim', href: '/dashboard' },
+      { key: 'users', label: 'Mezunlar', href: '/users' },
+      { key: 'departments', label: 'Bölümler', href: '/departments' },
+      { key: 'job-postings', label: 'İlanlar', href: '/job-postings' },
+      { key: 'applications', label: 'Başvurular', href: '/applications' },
+      { key: 'announcements', label: 'Duyurular', href: '/announcements' },
+      { key: 'admin', label: 'Admin Panel', href: '/admin' }
+    ]
+  };
+
+  return byRole[role] || byRole.guest;
 }
 
 const MintlifyTheme = {
@@ -751,6 +815,33 @@ const MintlifyTheme = {
   },
 
   renderHeader(activeTab = 'home') {
+    const currentUser = getCurrentUser();
+    const role = currentUser && currentUser.role ? String(currentUser.role).toLowerCase() : 'guest';
+    const roleLabel = ROLE_DISPLAY_LABELS[role] || role;
+    const navItems = getNavItemsForUser(currentUser);
+    const navLinksHtml = navItems
+      .map(item => `<a href="${item.href}" class="nav-link ${activeTab === item.key ? 'active' : ''}">${escapeHtml(item.label)}</a>`)
+      .join('\n              ');
+
+    const adminLink = role === 'admin'
+      ? `<a href="/admin" class="btn btn-accent-green">Admin Panel</a>`
+      : '';
+    const authActions = currentUser
+      ? `
+          ${adminLink}
+          <a href="/users/${currentUser.id}" class="btn btn-secondary" title="Profilim (${escapeHtml(roleLabel)})">
+            <span class="mint-dot"></span> ${escapeHtml(currentUser.name)} · ${escapeHtml(roleLabel)}
+          </a>
+          <form action="/logout" method="POST" style="display: inline; margin: 0;">
+            <button type="submit" class="btn btn-primary">Çıkış Yap</button>
+          </form>
+        `
+      : `
+          <a href="/login" class="btn btn-secondary">Giriş Yap</a>
+          <a href="/register" class="btn btn-accent-green">Kayıt Ol</a>
+          <a href="/api/swagger" target="_blank" class="btn btn-primary">Swagger API</a>
+        `;
+
     return `
       <div class="promo-banner">
         <span class="promo-pill">1453</span>
@@ -767,19 +858,12 @@ const MintlifyTheme = {
             </a>
 
             <nav class="nav-links" aria-label="Ana Menü">
-              <a href="/home" class="nav-link ${activeTab === 'home' ? 'active' : ''}">Ana Sayfa</a>
-              <a href="/users" class="nav-link ${activeTab === 'users' ? 'active' : ''}">Mezunlar</a>
-              <a href="/departments" class="nav-link ${activeTab === 'departments' ? 'active' : ''}">Bölümler</a>
-              <a href="/job-postings" class="nav-link ${activeTab === 'job-postings' ? 'active' : ''}">İlanlar</a>
-              <a href="/applications" class="nav-link ${activeTab === 'applications' ? 'active' : ''}">Başvurular</a>
-              <a href="/announcements" class="nav-link ${activeTab === 'announcements' ? 'active' : ''}">Duyurular</a>
-              <a href="/about" class="nav-link ${activeTab === 'about' ? 'active' : ''}">Hakkında</a>
+              ${navLinksHtml}
             </nav>
           </div>
 
           <div class="nav-actions">
-            <a href="/users" class="btn btn-secondary">Mezun Ağı</a>
-            <a href="/api/swagger" target="_blank" class="btn btn-primary">Swagger API</a>
+            ${authActions}
           </div>
         </div>
       </header>

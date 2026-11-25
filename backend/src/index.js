@@ -16,10 +16,14 @@ const apiJobPostingRoutes = require('./routes/apiJobPostingRoutes');
 const jobPostingRoutes = require('./routes/jobPostingRoutes');
 const apiApplicationRoutes = require('./routes/apiApplicationRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const loggerMiddleware = require('./middlewares/loggerMiddleware');
 const notFoundGuardian = require('./middlewares/notFoundGuardian');
 const serverErrorGuardian = require('./middlewares/serverErrorGuardian');
 const NotFoundView = require('./views/notFoundView');
+const { attachCurrentUser } = require('./utils/sessionAuth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -562,6 +566,7 @@ app.use(loggerMiddleware);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(attachCurrentUser);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Swagger UI rotası (/api/swagger)
@@ -646,7 +651,10 @@ app.use('/users/:userId/job-postings', jobPostingRoutes);
 app.use('/applications', applicationRoutes);
 app.use('/job-postings/:jobPostingId/applications', applicationRoutes);
 app.use('/users/:userId/applications', applicationRoutes);
+app.use('/admin', adminRoutes);
+app.use('/dashboard', dashboardRoutes);
 app.use('/', userRoutes);
+app.use('/', authRoutes);
 app.use('/', announcementRoutes);
 app.use('/', departmentRoutes);
 
